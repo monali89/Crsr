@@ -14,10 +14,10 @@ import java.util.Comparator;
 
 public class FastCollinearPoints {
 
-    private List<LineSegment> lineSegments;
+    private final List<LineSegment> lineSegments;
 
     // finds all line segments containing 4 or more points
-    public FastCollinearPoints(Point[] points){
+    public FastCollinearPoints(Point[] points) {
 
         lineSegments = new ArrayList<LineSegment>();
         Set<String> tempSet = new HashSet<String>();
@@ -26,7 +26,7 @@ public class FastCollinearPoints {
 
             List<Point> otherPoints = new ArrayList<Point>();
             for (int j = 0; j < points.length; j++) {
-                if(i == j) continue;
+                if (i == j) continue;
                 otherPoints.add(points[j]);
             }
 
@@ -37,17 +37,17 @@ public class FastCollinearPoints {
             int count = 1;
             List<Point> collinearPoints = new ArrayList<Point>();
             collinearPoints.add(otherPoints.get(s));
-            while(e < otherPoints.size()){
-                if(points[i].slopeTo(otherPoints.get(s)) == points[i].slopeTo(otherPoints.get(e))){
+            while (e < otherPoints.size()) {
+                if (points[i].slopeTo(otherPoints.get(s)) == points[i].slopeTo(otherPoints.get(e))) {
                     count++;
                     collinearPoints.add(otherPoints.get(e));
                     e++;
-                }else{
-                    if(count >= 3){
+                } else {
+                    if (count >= 3) {
                         collinearPoints.add(points[i]);
                         Collections.sort(collinearPoints, new ByNaturalOrder());
                         LineSegment ls = new LineSegment(collinearPoints.get(0), collinearPoints.get(collinearPoints.size()-1));
-                        if(!tempSet.contains(ls.toString())){
+                        if (!tempSet.contains(ls.toString())) {
                             tempSet.add(ls.toString());
                             lineSegments.add(ls);
                         }
@@ -58,40 +58,10 @@ public class FastCollinearPoints {
                     e = s+1;
                 }
             }
-
-            /*Map<Double, List<Point>> map = new HashMap<Double, List<Point>>();
-            for(Point p: otherPoints){
-                double currSlope = points[i].slopeTo(p);
-                List<Point> tempList = new ArrayList<Point>();
-                if(map.containsKey(currSlope)){
-                    tempList = map.get(currSlope);
-                }
-                tempList.add(p);
-                map.put(currSlope, tempList);
-            }
-
-            for(double s: map.keySet()) {
-                if (map.get(s).size() >= 3) {
-                    List<Point> tempList = map.get(s);
-                    Point start = tempList.get(0);
-                    Point end = tempList.get(tempList.size() - 1);
-                    if (points[i].compareTo(start) <= 0) {
-                        start = points[i];
-                    } else if (points[i].compareTo(end) >= 1) {
-                        end = points[i];
-                    }
-                    LineSegment curr = new LineSegment(start, end);
-                    boolean flag = false;
-                    for (LineSegment seg : lineSegments) {
-                        if (seg.toString().equals(curr.toString())) flag = true;
-                    }
-                    if (!flag) lineSegments.add(curr);
-                }
-            }*/
         }
     }
 
-    private static class ByNaturalOrder implements Comparator<Point>{
+    private static class ByNaturalOrder implements Comparator<Point> {
         public int compare(Point p1, Point p2){
             return p1.compareTo(p2);
         }

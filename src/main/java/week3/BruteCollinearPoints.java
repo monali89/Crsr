@@ -1,6 +1,11 @@
 package week3;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Date: 10/13/2019
@@ -9,49 +14,40 @@ import java.util.*;
 
 public class BruteCollinearPoints {
 
-    private List<LineSegment> lineSegments;
+    private final List<LineSegment> lineSegments;
 
     // finds all line segments containing 4 points
-    public BruteCollinearPoints(Point[] points){
+    public BruteCollinearPoints(Point[] points) {
 
         lineSegments = new ArrayList<LineSegment>();
+        Set<String> tempSet = new HashSet<String>();
 
         for (int i = 0; i < points.length; i++) {
-
-            List<Point> otherPoints = new ArrayList<Point>();
-            for (int j = 0; j < points.length; j++) {
-                if(i == j) continue;
-                otherPoints.add(points[j]);
-            }
-
-            Map<Double, List<Point>> map = new HashMap<Double, List<Point>>();
-            for(Point p: otherPoints){
-                double currSlope = points[i].slopeTo(p);
-                List<Point> tempList = new ArrayList<Point>();
-                if(map.containsKey(currSlope)){
-                    tempList = map.get(currSlope);
-                }
-                tempList.add(p);
-                map.put(currSlope, tempList);
-            }
-
-            for(double s: map.keySet()) {
-                if (map.get(s).size() >= 3) {
-                    List<Point> tempList = map.get(s);
-                    Point start = points[i];
-                    Point end = points[i];
-                    for(Point currP: tempList){
-                        start = start.compareTo(currP) <= 0 ? start : currP;
-                        end = end.compareTo(currP) >= 1 ? end : currP;
+            for (int j = i+1; j < points.length; j++) {
+                for (int k = j+1; k < points.length; k++) {
+                    for (int l = k+1; l < points.length; l++) {
+                        if (points[i].slopeTo(points[j]) == points[i].slopeTo(points[k]) &&
+                                points[i].slopeTo(points[k]) == points[i].slopeTo(points[l])){
+                            List<Point> collinearPoints = new ArrayList<Point>();
+                            collinearPoints.add(points[i]);
+                            collinearPoints.add(points[j]);
+                            collinearPoints.add(points[k]);
+                            collinearPoints.add(points[l]);
+                            Collections.sort(collinearPoints, new ByNaturalOrder());
+                            LineSegment ls = new LineSegment(collinearPoints.get(0), collinearPoints.get(collinearPoints.size()-1));
+                            if (!tempSet.contains(ls.toString())){
+                                lineSegments.add(ls);
+                            }
+                        }
                     }
-                    LineSegment curr = new LineSegment(start, end);
-                    boolean flag = false;
-                    for (LineSegment seg : lineSegments) {
-                        if (seg.toString().equals(curr.toString())) flag = true;
-                    }
-                    if (!flag) lineSegments.add(curr);
                 }
             }
+        }
+    }
+
+    private static class ByNaturalOrder implements Comparator<Point> {
+        public int compare(Point p1, Point p2) {
+            return p1.compareTo(p2);
         }
     }
 
@@ -61,7 +57,7 @@ public class BruteCollinearPoints {
     }
 
     // the line segments
-    public LineSegment[] segments(){
+    public LineSegment[] segments() {
         return lineSegments.toArray(new LineSegment[lineSegments.size()]);
     }
 

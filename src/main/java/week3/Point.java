@@ -60,10 +60,9 @@ public class Point implements Comparable<Point> {
      */
     public double slopeTo(Point that) {
 
-        if(that.y - this.y == 0) return 0.0;
-        else if(that.x - this.x == 0) return Double.POSITIVE_INFINITY;
-        else if(that.y - this.y == 0 && that.x - this.x == 0) return Double.NEGATIVE_INFINITY;
-        //System.out.println((that.y - this.y)*1.0 / (that.x - this.x)*1.0);
+        if (that.y - this.y == 0) return 0.0;
+        else if (that.x - this.x == 0) return Double.POSITIVE_INFINITY;
+        else if (that.y - this.y == 0 && that.x - this.x == 0) return Double.NEGATIVE_INFINITY;
         else return (that.y - this.y)*1.0 / (that.x - this.x)*1.0;
     }
 
@@ -81,11 +80,11 @@ public class Point implements Comparable<Point> {
      */
     public int compareTo(Point that) {
 
-        if(this.y > that.y) return 1;
-        else if(this.y < that.y) return -1;
+        if (this.y > that.y) return 1;
+        else if (this.y < that.y) return -1;
         else {
-            if(this.x > that.x) return 1;
-            if(this.x < that.x) return -1;
+            if (this.x > that.x) return 1;
+            if (this.x < that.x) return -1;
         }
         return 0;
     }
@@ -100,16 +99,16 @@ public class Point implements Comparable<Point> {
         return new BySlope(this.x, this.y);
     }
 
-    private static class BySlope implements Comparator<Point>{
+    private static class BySlope implements Comparator<Point> {
         private final Point p;
         private BySlope(int x, int y){
             p = new Point(x, y);
         }
-        public int compare(Point p1, Point p2){
+        public int compare(Point p1, Point p2) {
             double slope1 = p.slopeTo(p1);
             double slope2 = p.slopeTo(p2);
-            if(slope1 < slope2) return -1;
-            if(slope1 > slope2) return 1;
+            if (slope1 < slope2) return -1;
+            if (slope1 > slope2) return 1;
             return 0;
         }
     }
@@ -131,7 +130,13 @@ public class Point implements Comparable<Point> {
      * Unit tests the week3.Point data type.
      */
     public static void main(String[] args) {
-
+        Point p1 = new Point(1,1);
+        Point p2 = new Point(2,2);
+        Point p3 = new Point(3,3);
+        System.out.println(p1.compareTo(p2));
+        System.out.println(p1.slopeTo(p2));
+        Comparator<Point> c = p2.slopeOrder();
+        System.out.println(c.compare(p1, p3));
     }
 }
 
