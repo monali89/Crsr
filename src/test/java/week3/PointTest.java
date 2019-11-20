@@ -126,9 +126,9 @@ public class PointTest {
     }
 
     @Test
-    public void test07_fastCollinearPoints(){
+    public void test07_refinedFastCollinearPoints(){
 
-        int count = 100;
+        int count = 500;
         int maxXY = 10;
 
         Random ran = new Random();
@@ -148,11 +148,12 @@ public class PointTest {
         }
 
         System.out.println(pointList.toString());
-        FastCollinearPoints bf = new FastCollinearPoints(points);
+        FastCollinearPoints fc = new FastCollinearPoints(points);
+        LineSegment[] ls = fc.segments();
         Set<String> segments = new HashSet<String>();
-        for(LineSegment ls: bf.segments()){
-            Assert.assertFalse(segments.contains(ls.toString()), "Set: " + segments + "\nAlready Contains: " + ls.toString());
-            segments.add(ls.toString());
+        for (int i = 0; i < fc.numberOfSegments(); i++) {
+            Assert.assertFalse(segments.contains(ls[i].toString()), "Set: " + segments + "\nAlready Contains: " + ls[i].toString());
+            segments.add(ls[i].toString());
         }
         System.out.println(segments);
     }
