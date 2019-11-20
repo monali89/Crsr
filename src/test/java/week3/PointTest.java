@@ -3,9 +3,9 @@ package week3;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
 
-import java.util.Comparator;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Date: 11/8/2019
@@ -15,7 +15,7 @@ import java.util.Random;
 public class PointTest {
 
     @Test(dataProvider = "GeneratePoints")
-    public void test_compareTo(int x0, int y0, int x1, int y1){
+    public void test01_compareTo(int x0, int y0, int x1, int y1) {
 
         Point p1 = new Point(x0, y0);
         Point p2 = new Point(x1, y1);
@@ -32,7 +32,7 @@ public class PointTest {
     }
 
     @Test(dataProvider = "GeneratePoints")
-    public void test_slopeTo(int x0, int y0, int x1, int y1) {
+    public void test02_slopeTo(int x0, int y0, int x1, int y1) {
         Point p1 = new Point(x0, y0);
         Point p2 = new Point(x1, y1);
         Double s = Double.valueOf((y1 - y0)*1.0 / (x1 - x0)*1.0);
@@ -57,101 +57,104 @@ public class PointTest {
         return obj;
     }
 
+    // Generating line segments test
 
-    public void test_temp(){
+    @Test
+    public void test03_bruteCollinearPoints(){
+        int count = 10;
+        int maxXY = Integer.MAX_VALUE;
+        Point[] points = new Point[count];
+        Random ran = new Random();
+        for (int i = 0; i < count; i++) {
+            int x = ran.nextInt(maxXY) * (Math.random() > 0.5 ? 1 : -1);
+            int y = ran.nextInt(maxXY) * (Math.random() > 0.5 ? 1 : -1);
+            points[i] = new Point(x, y);
+        }
+        BruteCollinearPoints bf = new BruteCollinearPoints(points);
+        for(LineSegment ls: bf.segments()) {
+            System.out.println(ls.toString());
+        }
+    }
 
-        Point p1, p2, p3;
-        Comparator<Point> itr;
+    @Test
+    public void test04_fastCollinearPoints(){
+        int count = 50;
+        int maxXY = 10; // Integer.MAX_VALUE;
+        Point[] points = new Point[count];
+        Random ran = new Random();
+        for (int i = 0; i < count; i++) {
+            int x = ran.nextInt(maxXY) * (Math.random() > 0.5 ? 1 : -1);
+            int y = ran.nextInt(maxXY) * (Math.random() > 0.5 ? 1 : -1);
+            points[i] = new Point(x, y);
+        }
+        System.out.println(Arrays.toString(points));
+        FastCollinearPoints bf = new FastCollinearPoints(points);
+        Set<String> segments = new HashSet<String>();
+        for(LineSegment ls: bf.segments()){
+            Assert.assertFalse(segments.contains(ls.toString()), "Set: " + segments + "\nAlready Contains: " + ls.toString());
+            segments.add(ls.toString());
+        }
+        System.out.println(segments);
+    }
 
-        System.out.println("TEST 1: All points on same line with p1 as the smallest");
-        p1 = new Point(1,1);
-        p2 = new Point(2,2);
-        p3 = new Point(3,3);
-        System.out.println("Comparing "+ p2.toString() +" to "+ p1.toString() +": " + p1.compareTo(p2));
-        System.out.println("Comparing "+ p3.toString() +" to "+ p1.toString() +": " + p1.compareTo(p3));
-        System.out.println("Slope of "+ p2.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p2));
-        System.out.println("Slope of "+ p3.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p3));
-        itr = p1.slopeOrder();
-        System.out.print("Comparing slopes to "+ p1.toString() +": ");
-        if(itr.compare(p2,p3) == 0) System.out.println(p2.toString() +"'s slope equal to "+ p3.toString());
-        if(itr.compare(p2,p3) > 0) System.out.println(p2.toString() +"'s slope greater than "+ p3.toString());
-        if(itr.compare(p2,p3) < 0) System.out.println(p2.toString() +"'s slope less than "+ p3.toString());
-        System.out.println();
+    @Test
+    public void test05_fastCollinearPoints(){
+        Point[] points = new Point[5];
+        points[0] = new Point(1,1);
+        points[1] = new Point(2,2);
+        points[2] = new Point(3,3);
+        points[3] = new Point(4,4);
+        points[4] = new Point(5,5);
+        FastCollinearPoints bf = new FastCollinearPoints(points);
+        Set<String> segments = new HashSet<String>();
+        for(LineSegment ls: bf.segments()){
+            Assert.assertFalse(segments.contains(ls.toString()), "Set: " + segments + "\nAlready Contains:" + ls.toString());
+            segments.add(ls.toString());
+        }
+        System.out.println(segments);
+    }
 
-        System.out.println("TEST 2: All points on same line with p1 as the middle");
-        p1 = new Point(2,2);
-        p2 = new Point(1,1);
-        p3 = new Point(3,3);
-        System.out.println("Comparing "+ p2.toString() +" to "+ p1.toString() +": " + p1.compareTo(p2));
-        System.out.println("Comparing "+ p3.toString() +" to "+ p1.toString() +": " + p1.compareTo(p3));
-        System.out.println("Slope of "+ p2.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p2));
-        System.out.println("Slope of "+ p3.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p3));
-        itr = p1.slopeOrder();
-        System.out.print("Comparing slopes to "+ p1.toString() +": ");
-        if(itr.compare(p2,p3) == 0) System.out.println(p2.toString() +"'s slope equal to "+ p3.toString());
-        if(itr.compare(p2,p3) > 0) System.out.println(p2.toString() +"'s slope greater than "+ p3.toString());
-        if(itr.compare(p2,p3) < 0) System.out.println(p2.toString() +"'s slope less than "+ p3.toString());
-        System.out.println();
+    @Test
+    public void test06_lineSegmentDuplicates(){
+        List<LineSegment> lineSegments = new ArrayList<LineSegment>();
+        LineSegment ls1 = new LineSegment(new Point(1,1), new Point(2,2));
+        LineSegment ls2 = new LineSegment(new Point(1,1), new Point(3,3));
+        LineSegment ls3 = new LineSegment(new Point(1,1), new Point(2,2));
+        lineSegments.add(ls1);
+        lineSegments.add(ls2);
+        Assert.assertTrue(lineSegments.contains(ls3), "Linesegments to not have ls3: " + lineSegments);
+    }
 
-        System.out.println("TEST 3: All points on different lines");
-        p1 = new Point(4,3);
-        p2 = new Point(2,7);
-        p3 = new Point(5,6);
-        System.out.println("Comparing "+ p2.toString() +" to "+ p1.toString() +": " + p1.compareTo(p2));
-        System.out.println("Comparing "+ p3.toString() +" to "+ p1.toString() +": " + p1.compareTo(p3));
-        System.out.println("Slope of "+ p2.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p2));
-        System.out.println("Slope of "+ p3.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p3));
-        itr = p1.slopeOrder();
-        System.out.print("Comparing slopes to "+ p1.toString() +": ");
-        if(itr.compare(p2,p3) == 0) System.out.println(p2.toString() +"'s slope equal to "+ p3.toString());
-        if(itr.compare(p2,p3) > 0) System.out.println(p2.toString() +"'s slope greater than "+ p3.toString());
-        if(itr.compare(p2,p3) < 0) System.out.println(p2.toString() +"'s slope less than "+ p3.toString());
-        System.out.println();
+    @Test
+    public void test07_fastCollinearPoints(){
 
-        System.out.println("TEST 4: Points in different quadrants");
-        p1 = new Point(-4,8);
-        p2 = new Point(6,-3);
-        p3 = new Point(-5,-2);
-        System.out.println("Comparing "+ p2.toString() +" to "+ p1.toString() +": " + p1.compareTo(p2));
-        System.out.println("Comparing "+ p3.toString() +" to "+ p1.toString() +": " + p1.compareTo(p3));
-        System.out.println("Slope of "+ p2.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p2));
-        System.out.println("Slope of "+ p3.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p3));
-        itr = p1.slopeOrder();
-        System.out.print("Comparing slopes to "+ p1.toString() +": ");
-        if(itr.compare(p2,p3) == 0) System.out.println(p2.toString() +"'s slope equal to "+ p3.toString());
-        if(itr.compare(p2,p3) > 0) System.out.println(p2.toString() +"'s slope greater than "+ p3.toString());
-        if(itr.compare(p2,p3) < 0) System.out.println(p2.toString() +"'s slope less than "+ p3.toString());
-        System.out.println();
+        int count = 100;
+        int maxXY = 10;
 
-        System.out.println("TEST 5: Points parallel to X axis");
-        p1 = new Point(-4,3);
-        p2 = new Point(6,3);
-        p3 = new Point(-5,3);
-        System.out.println("Comparing "+ p2.toString() +" to "+ p1.toString() +": " + p1.compareTo(p2));
-        System.out.println("Comparing "+ p3.toString() +" to "+ p1.toString() +": " + p1.compareTo(p3));
-        System.out.println("Slope of "+ p2.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p2));
-        System.out.println("Slope of "+ p3.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p3));
-        itr = p1.slopeOrder();
-        System.out.print("Comparing slopes to "+ p1.toString() +": ");
-        if(itr.compare(p2,p3) == 0) System.out.println(p2.toString() +"'s slope equal to "+ p3.toString());
-        if(itr.compare(p2,p3) > 0) System.out.println(p2.toString() +"'s slope greater than "+ p3.toString());
-        if(itr.compare(p2,p3) < 0) System.out.println(p2.toString() +"'s slope less than "+ p3.toString());
-        System.out.println();
+        Random ran = new Random();
+        List<Point> pointList = new ArrayList<Point>();
+        Set<String> present = new HashSet<String>();
+        Point[] points = new Point[count];
 
-        System.out.println("TEST 6: Points parallel to Y axis");
-        p1 = new Point(3,-3);
-        p2 = new Point(3,8);
-        p3 = new Point(3,-2);
-        System.out.println("Comparing "+ p2.toString() +" to "+ p1.toString() +": " + p1.compareTo(p2));
-        System.out.println("Comparing "+ p3.toString() +" to "+ p1.toString() +": " + p1.compareTo(p3));
-        System.out.println("Slope of "+ p2.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p2));
-        System.out.println("Slope of "+ p3.toString() +" to "+ p1.toString() +": " + p1.slopeTo(p3));
-        itr = p1.slopeOrder();
-        System.out.print("Comparing slopes to "+ p1.toString() +": ");
-        if(itr.compare(p2,p3) == 0) System.out.println(p2.toString() +"'s slope equal to "+ p3.toString());
-        if(itr.compare(p2,p3) > 0) System.out.println(p2.toString() +"'s slope greater than "+ p3.toString());
-        if(itr.compare(p2,p3) < 0) System.out.println(p2.toString() +"'s slope less than "+ p3.toString());
-        System.out.println();
+        int ctr = 0;
+        while(!(pointList.size() > count) && ctr < count){
+            int x = ran.nextInt(maxXY) * (Math.random() > 0.5 ? 1 : -1);
+            int y = ran.nextInt(maxXY) * (Math.random() > 0.5 ? 1 : -1);
+            Point p = new Point(x,y);
+            if(present.contains(p.toString())) continue;
+            pointList.add(p);
+            present.add(p.toString());
+            points[ctr++] = p;
+        }
+
+        System.out.println(pointList.toString());
+        FastCollinearPoints bf = new FastCollinearPoints(points);
+        Set<String> segments = new HashSet<String>();
+        for(LineSegment ls: bf.segments()){
+            Assert.assertFalse(segments.contains(ls.toString()), "Set: " + segments + "\nAlready Contains: " + ls.toString());
+            segments.add(ls.toString());
+        }
+        System.out.println(segments);
     }
 
 }

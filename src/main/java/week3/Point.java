@@ -60,9 +60,9 @@ public class Point implements Comparable<Point> {
      */
     public double slopeTo(Point that) {
 
-        if (that.y - this.y == 0) return 0.0;
-        else if (that.x - this.x == 0) return Double.POSITIVE_INFINITY;
-        else if (that.y - this.y == 0 && that.x - this.x == 0) return Double.NEGATIVE_INFINITY;
+        if (that.y - this.y == 0 && that.x - this.x == 0) return Double.NEGATIVE_INFINITY;
+        if (that.y - this.y == 0 && that.x - this.x != 0) return 0.0;
+        if (that.y - this.y != 0 && that.x - this.x == 0) return Double.POSITIVE_INFINITY;
         else return (that.y - this.y)*1.0 / (that.x - this.x)*1.0;
     }
 
@@ -101,7 +101,7 @@ public class Point implements Comparable<Point> {
 
     private static class BySlope implements Comparator<Point> {
         private final Point p;
-        private BySlope(int x, int y){
+        private BySlope(int x, int y) {
             p = new Point(x, y);
         }
         public int compare(Point p1, Point p2) {
@@ -130,9 +130,9 @@ public class Point implements Comparable<Point> {
      * Unit tests the week3.Point data type.
      */
     public static void main(String[] args) {
-        Point p1 = new Point(1,1);
-        Point p2 = new Point(2,2);
-        Point p3 = new Point(3,3);
+        Point p1 = new Point(1, 1);
+        Point p2 = new Point(2, 2);
+        Point p3 = new Point(3, 3);
         System.out.println(p1.compareTo(p2));
         System.out.println(p1.slopeTo(p2));
         Comparator<Point> c = p2.slopeOrder();

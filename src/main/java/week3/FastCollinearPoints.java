@@ -1,11 +1,10 @@
 package week3;
 
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 /**
  * Date: 10/14/2019
@@ -19,10 +18,15 @@ public class FastCollinearPoints {
     // finds all line segments containing 4 or more points
     public FastCollinearPoints(Point[] points) {
 
+        if(points == null) throw new IllegalArgumentException();
+
+        Collections.sort(Arrays.asList(points), new ByNaturalOrder());
+
         lineSegments = new ArrayList<LineSegment>();
-        Set<String> tempSet = new HashSet<String>();
 
         for (int i = 0; i < points.length; i++) {
+
+            if (points[i] == null) throw new java.lang.IllegalArgumentException();
 
             List<Point> otherPoints = new ArrayList<Point>();
             for (int j = 0; j < points.length; j++) {
@@ -44,11 +48,9 @@ public class FastCollinearPoints {
                     e++;
                 } else {
                     if (count >= 3) {
-                        collinearPoints.add(points[i]);
                         Collections.sort(collinearPoints, new ByNaturalOrder());
-                        LineSegment ls = new LineSegment(collinearPoints.get(0), collinearPoints.get(collinearPoints.size()-1));
-                        if (!tempSet.contains(ls.toString())) {
-                            tempSet.add(ls.toString());
+                        if (points[i].compareTo(collinearPoints.get(0)) < 0) {
+                            LineSegment ls = new LineSegment(points[i], collinearPoints.get(collinearPoints.size()-1));
                             lineSegments.add(ls);
                         }
                     }
@@ -58,37 +60,31 @@ public class FastCollinearPoints {
                     e = s+1;
                 }
             }
+            if(count >= 3 && e >= otherPoints.size()) {
+                Collections.sort(collinearPoints, new ByNaturalOrder());
+                if (points[i].compareTo(collinearPoints.get(0)) < 0) {
+                    LineSegment ls = new LineSegment(points[i], collinearPoints.get(collinearPoints.size()-1));
+                    lineSegments.add(ls);
+                }
+            }
         }
     }
 
     private static class ByNaturalOrder implements Comparator<Point> {
-        public int compare(Point p1, Point p2){
-            return p1.compareTo(p2);
+        public int compare(Point o1, Point o2) {
+            if (o1 == o2) throw new java.lang.IllegalArgumentException();
+            return o1.compareTo(o2);
         }
     }
 
     // the number of line segments
-    public int numberOfSegments(){
+    public int numberOfSegments() {
         return lineSegments.size();
     }
 
     // the line segments
-    public LineSegment[] segments(){
+    public LineSegment[] segments() {
         return lineSegments.toArray(new LineSegment[lineSegments.size()]);
     }
 
-    public static void main(String[] args) {
-        Point[] ip = new Point[5];
-        ip[0] = new Point(1,1);
-        ip[1] = new Point(2,2);
-        ip[2] = new Point(3,3);
-        ip[3] = new Point(4,4);
-        ip[4] = new Point(4,5);
-
-        FastCollinearPoints p = new FastCollinearPoints(ip);
-        LineSegment[] lseg = p.segments();
-        for (int i = 0; i < lseg.length; i++) {
-            System.out.println(lseg[i].toString());
-        }
-    }
 }
