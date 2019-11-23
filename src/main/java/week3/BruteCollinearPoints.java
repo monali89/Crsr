@@ -1,10 +1,6 @@
 package week3;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * Date: 10/13/2019
@@ -13,34 +9,41 @@ import java.util.List;
 
 public class BruteCollinearPoints {
 
-    private final List<LineSegment> lineSegments;
+    private LineSegment[] lineSegments;
+    private int size;
 
     // finds all line segments containing 4 points
     public BruteCollinearPoints(Point[] points) {
 
         if (points == null) throw new IllegalArgumentException();
-
-        Collections.sort(Arrays.asList(points), new ByNaturalOrder());
-
-        lineSegments = new ArrayList<LineSegment>();
-
         for (int i = 0; i < points.length; i++) {
-            if (points[i] == null) throw new java.lang.IllegalArgumentException();
-            for (int j = i+1; j < points.length; j++) {
-                for (int k = j+1; k < points.length; k++) {
-                    for (int m = k+1; m < points.length; m++) {
-                        if (points[i].slopeTo(points[j]) == points[i].slopeTo(points[k]) &&
-                                points[i].slopeTo(points[k]) == points[i].slopeTo(points[m])) {
-                            List<Point> collinearPoints = new ArrayList<Point>();
-                            collinearPoints.add(points[i]);
-                            collinearPoints.add(points[j]);
-                            collinearPoints.add(points[k]);
-                            collinearPoints.add(points[m]);
-                            Collections.sort(collinearPoints, new ByNaturalOrder());
-                            if (points[i].compareTo(collinearPoints.get(0)) < 0) {
-                                LineSegment ls = new LineSegment(points[i], collinearPoints.get(collinearPoints.size()-1));
-                                lineSegments.add(ls);
-                            }
+            if (points[i] == null) throw new IllegalArgumentException();
+        }
+
+        Arrays.sort(points);
+        for (int i = 0; i < points.length; i++) {
+            if (i > 0 && points[i-1].slopeTo(points[i]) == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException();
+        }
+
+        size = 0;
+        lineSegments = new LineSegment[points.length/2];
+
+        for (int a = 0; a < points.length; a++) {
+            for (int b = a + 1; b < points.length; b++) {
+                for (int c = b + 1; c < points.length; c++) {
+                    for (int d = c + 1; d < points.length; d++) {
+                        Point[] ap = new Point[4];
+                        ap[0] = points[a];
+                        ap[1] = points[b];
+                        ap[2] = points[c];
+                        ap[3] = points[d];
+                        Arrays.sort(ap);
+                        double slope1 = points[a].slopeTo(points[b]);
+                        double slope2 = points[a].slopeTo(points[c]);
+                        double slope3 = points[a].slopeTo(points[d]);
+                        if (slope1 == slope2 && slope2 == slope3) {
+                            if (size >= lineSegments.length) resizeArray(size*2);
+                            lineSegments[size++] = new LineSegment(ap[0], ap[3]);
                         }
                     }
                 }
@@ -48,20 +51,25 @@ public class BruteCollinearPoints {
         }
     }
 
-    private static class ByNaturalOrder implements Comparator<Point> {
-        public int compare(Point o1, Point o2) {
-            if (o1 == o2) throw new java.lang.IllegalArgumentException();
-            return o1.compareTo(o2);
+    private void resizeArray(int newSize) {
+        LineSegment[] copy = new LineSegment[newSize];
+        for (int i = 0; i < size; i++) {
+            copy[i] = lineSegments[i];
         }
+        lineSegments = copy;
     }
 
     // the number of line segments
     public int numberOfSegments() {
-        return lineSegments.size();
+        return size;
     }
 
     // the line segments
     public LineSegment[] segments() {
-        return lineSegments.toArray(new LineSegment[lineSegments.size()]);
+        LineSegment[] shrinked = new LineSegment[size];
+        for (int i = 0; i < size; i++) {
+            shrinked[i] = lineSegments[i];
+        }
+        return shrinked;
     }
 }

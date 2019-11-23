@@ -3,8 +3,6 @@ package week3;
 import org.testng.Assert;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.testng.asserts.SoftAssert;
-
 import java.util.*;
 
 /**
@@ -14,7 +12,7 @@ import java.util.*;
 
 public class PointTest {
 
-    @Test(dataProvider = "GeneratePoints")
+    //@Test(dataProvider = "GeneratePoints")
     public void test01_compareTo(int x0, int y0, int x1, int y1) {
 
         Point p1 = new Point(x0, y0);
@@ -31,7 +29,7 @@ public class PointTest {
         }
     }
 
-    @Test(dataProvider = "GeneratePoints")
+    //@Test(dataProvider = "GeneratePoints")
     public void test02_slopeTo(int x0, int y0, int x1, int y1) {
         Point p1 = new Point(x0, y0);
         Point p2 = new Point(x1, y1);
@@ -62,7 +60,7 @@ public class PointTest {
     @Test
     public void test03_bruteCollinearPoints(){
         int count = 10;
-        int maxXY = Integer.MAX_VALUE;
+        int maxXY = 10; //Integer.MAX_VALUE;
         Point[] points = new Point[count];
         Random ran = new Random();
         for (int i = 0; i < count; i++) {
@@ -71,64 +69,31 @@ public class PointTest {
             points[i] = new Point(x, y);
         }
         BruteCollinearPoints bf = new BruteCollinearPoints(points);
-        for(LineSegment ls: bf.segments()) {
-            System.out.println(ls.toString());
+        LineSegment[] ls = bf.segments();
+        System.out.println(bf.numberOfSegments());
+        for (int i = 0; i < bf.numberOfSegments(); i++) {
+            System.out.println(ls[i]);
         }
     }
 
     @Test
     public void test04_fastCollinearPoints(){
-        int count = 50;
-        int maxXY = 10; // Integer.MAX_VALUE;
-        Point[] points = new Point[count];
-        Random ran = new Random();
-        for (int i = 0; i < count; i++) {
-            int x = ran.nextInt(maxXY) * (Math.random() > 0.5 ? 1 : -1);
-            int y = ran.nextInt(maxXY) * (Math.random() > 0.5 ? 1 : -1);
-            points[i] = new Point(x, y);
-        }
-        System.out.println(Arrays.toString(points));
-        FastCollinearPoints bf = new FastCollinearPoints(points);
-        Set<String> segments = new HashSet<String>();
-        for(LineSegment ls: bf.segments()){
-            Assert.assertFalse(segments.contains(ls.toString()), "Set: " + segments + "\nAlready Contains: " + ls.toString());
-            segments.add(ls.toString());
-        }
-        System.out.println(segments);
-    }
-
-    @Test
-    public void test05_fastCollinearPoints(){
         Point[] points = new Point[5];
         points[0] = new Point(1,1);
         points[1] = new Point(2,2);
         points[2] = new Point(3,3);
         points[3] = new Point(4,4);
         points[4] = new Point(5,5);
-        FastCollinearPoints bf = new FastCollinearPoints(points);
-        Set<String> segments = new HashSet<String>();
-        for(LineSegment ls: bf.segments()){
-            Assert.assertFalse(segments.contains(ls.toString()), "Set: " + segments + "\nAlready Contains:" + ls.toString());
-            segments.add(ls.toString());
-        }
-        System.out.println(segments);
+        FastCollinearPoints fc = new FastCollinearPoints(points);
+        LineSegment[] ls = fc.segments();
+        Assert.assertEquals(1, fc.numberOfSegments());
+        Assert.assertEquals("(1, 1) -> (5, 5)", ls[0].toString());
     }
 
     @Test
-    public void test06_lineSegmentDuplicates(){
-        List<LineSegment> lineSegments = new ArrayList<LineSegment>();
-        LineSegment ls1 = new LineSegment(new Point(1,1), new Point(2,2));
-        LineSegment ls2 = new LineSegment(new Point(1,1), new Point(3,3));
-        LineSegment ls3 = new LineSegment(new Point(1,1), new Point(2,2));
-        lineSegments.add(ls1);
-        lineSegments.add(ls2);
-        Assert.assertTrue(lineSegments.contains(ls3), "Linesegments to not have ls3: " + lineSegments);
-    }
+    public void test05_refinedFastCollinearPoints(){
 
-    @Test
-    public void test07_refinedFastCollinearPoints(){
-
-        int count = 500;
+        int count = 50;
         int maxXY = 10;
 
         Random ran = new Random();
@@ -155,7 +120,114 @@ public class PointTest {
             Assert.assertFalse(segments.contains(ls[i].toString()), "Set: " + segments + "\nAlready Contains: " + ls[i].toString());
             segments.add(ls[i].toString());
         }
+        Assert.assertEquals(fc.numberOfSegments(), segments.size());
         System.out.println(segments);
     }
 
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void test_bruteFroce_constructor_is_null(){
+        BruteCollinearPoints bf = new BruteCollinearPoints(null);
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void test_bruteFroce_point_Is_Null(){
+        Point[] points = new Point[5];
+        points[0] = new Point(1,1);
+        points[1] = new Point(2,2);
+        points[2] = null;
+        points[3] = new Point(4,4);
+        points[4] = new Point(5,5);
+        BruteCollinearPoints bf = new BruteCollinearPoints(points);
+        System.out.println(bf.numberOfSegments());
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void test_bruteFroce_point_is_repeated(){
+        Point[] points = new Point[5];
+        points[0] = new Point(1,1);
+        points[1] = new Point(2,2);
+        points[2] = new Point(3,3);
+        points[3] = new Point(4,4);
+        points[4] = new Point(1,1);
+        BruteCollinearPoints bf = new BruteCollinearPoints(points);
+        System.out.println(bf.numberOfSegments());
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void test_fastCollinear_constructor_is_null(){
+        BruteCollinearPoints bf = new BruteCollinearPoints(null);
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void test_fastCollinear_point_Is_Null(){
+        Point[] points = new Point[5];
+        points[0] = new Point(1,1);
+        points[1] = new Point(2,2);
+        points[2] = null;
+        points[3] = new Point(4,4);
+        points[4] = new Point(5,5);
+        BruteCollinearPoints bf = new BruteCollinearPoints(points);
+        System.out.println(bf.numberOfSegments());
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
+    public void test_fastCollinears_point_is_repeated(){
+        Point[] points = new Point[5];
+        points[0] = new Point(1,1);
+        points[1] = new Point(2,2);
+        points[2] = new Point(3,3);
+        points[3] = new Point(4,4);
+        points[4] = new Point(1,1);
+        BruteCollinearPoints bf = new BruteCollinearPoints(points);
+        System.out.println(bf.numberOfSegments());
+    }
+
+    @Test
+    public void test_fastCollinear_linesegments(){
+
+        Point s = new Point(17,12);
+        Point e = new Point(25,56);
+        Point[] points = new Point[10];
+        points[0] = s;
+        points[1] = e;
+        double slope = s.slopeTo(e);
+
+        for (int i = 2; i < points.length; i++) {
+            points[i] = getPointBetween(s, e, slope);
+        }
+
+        for (int i = 0; i < points.length; i++) System.out.print(points[i] + " ");
+        System.out.println();
+
+        FastCollinearPoints fc = new FastCollinearPoints(points);
+        LineSegment[] ls = fc.segments();
+        System.out.println(fc.numberOfSegments());
+        for (int i = 0; i < fc.numberOfSegments(); i++) {
+            System.out.println(i + " " + ls[i].toString());
+            if(ls[i].toString().equals("(17, 12) -> (25, 56)")){
+                Assert.assertTrue(true);
+            }
+        }
+        Assert.assertTrue(false);
+    }
+
+    private Point getPointBetween(Point min, Point max, double slope){
+
+        int x = getRandomBetween(17,25);
+        int y = (int) slope * (x - 17) + 12;
+        Point p = new Point(x, y);
+
+        while(min.compareTo(p) > -1 && max.compareTo(p) < 1){
+            x = getRandomBetween(17,25);
+            y = (int) slope * (x - 17) + 12;
+            p = new Point(x, y);
+        }
+
+        return p;
+    }
+
+    private int getRandomBetween(int min, int max){
+        Random random = new Random();
+        return random.nextInt((max - min) + 1) + min;
+    }
 }
