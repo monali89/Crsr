@@ -10,7 +10,10 @@ import java.util.Arrays;
 public class FastCollinearPoints {
 
     private LineSegment[] lineSegments;
-    private int size;
+    private int lsIndex;
+
+    private Point[] collinearPoints;
+    private int cpIndex;
 
     // finds all line segments containing 4 or more points
     public FastCollinearPoints(Point[] points) {
@@ -25,56 +28,88 @@ public class FastCollinearPoints {
             if (i > 0 && points[i-1].slopeTo(points[i]) == Double.NEGATIVE_INFINITY) throw new IllegalArgumentException();
         }
 
-        size = 0;
+        lsIndex = 0;
         lineSegments = new LineSegment[points.length/2];
-
-        Point[] otherPoints = points.clone();
 
         for (int i = 0; i < points.length; i++) {
 
+            Point[] otherPoints = points.clone();
             Arrays.sort(otherPoints, points[i].slopeOrder());
 
-            int s = 1;
-            int e = s+1;
-            int count = 1;
-            while (e < otherPoints.length) {
-                if (points[i].slopeTo(otherPoints[s]) == points[i].slopeTo(otherPoints[e])) {
-                    count++;
-                    e++;
+            collinearPoints = new Point[1];
+            cpIndex = 0;
+
+            for (int j = 1; j < otherPoints.length; j++) {
+                if (cpIndex == 0) {
+                    addToCollinearArray(otherPoints[j]);
                 } else {
-                    if (count >= 3 && points[i].compareTo(otherPoints[s]) <= 0) {
-                        if (size == lineSegments.length) resizeArray(size*2);
-                        lineSegments[size++] = new LineSegment(points[i], otherPoints[e]);
+                    double slope1 = points[i].slopeTo(collinearPoints[cpIndex - 1]);
+                    double slope2 = points[i].slopeTo(otherPoints[j]);
+                    if (slope1 == slope2) {
+                        addToCollinearArray(otherPoints[j]);
+                    } else {
+                        if (cpIndex >= 3) {
+                            Point[] tempArr = new Point[cpIndex];
+                            for (int k = 0; k < cpIndex; k++) {
+                                tempArr[k] = collinearPoints[k];
+                            }
+                            Arrays.sort(tempArr);
+                            if (points[i].compareTo(tempArr[0]) <= 0) {
+                                addToLineSegmentArray(new LineSegment(points[i], collinearPoints[cpIndex - 1]));
+                            }
+                        }
+                        collinearPoints = new Point[1];
+                        cpIndex = 0;
+                        addToCollinearArray(otherPoints[j]);
                     }
-                    count = 1;
-                    s = e;
-                    e = e + 1;
                 }
             }
-            if (count >= 3 && points[i].compareTo(otherPoints[s]) <= 0) {
-                if (size == lineSegments.length) resizeArray(size*2);
-                lineSegments[size++] = new LineSegment(points[i], otherPoints[e-1]);
+            if (cpIndex >= 3) {
+                Point[] tempArr = new Point[cpIndex];
+                for (int k = 0; k < cpIndex; k++) {
+                    tempArr[k] = collinearPoints[k];
+                }
+                Arrays.sort(tempArr);
+                if (points[i].compareTo(tempArr[0]) <= 0) {
+                    addToLineSegmentArray(new LineSegment(points[i], collinearPoints[cpIndex - 1]));
+                }
+                collinearPoints = new Point[1];
+                cpIndex = 0;
             }
         }
     }
 
-    private void resizeArray(int newSize) {
-        LineSegment[] copy = new LineSegment[newSize];
-        for (int i = 0; i < size; i++) {
-            copy[i] = lineSegments[i];
+    private void addToCollinearArray(Point p) {
+        if (cpIndex == collinearPoints.length) {
+            Point[] copy = new Point[cpIndex * 2];
+            for (int i = 0; i < cpIndex; i++) {
+                copy[i] = collinearPoints[i];
+            }
+            collinearPoints = copy;
         }
-        lineSegments = copy;
+        collinearPoints[cpIndex++] = p;
+    }
+
+    private void addToLineSegmentArray(LineSegment ls) {
+        if (lsIndex == lineSegments.length) {
+            LineSegment[] copy = new LineSegment[lsIndex*2];
+            for (int i = 0; i < lsIndex; i++) {
+                copy[i] = lineSegments[i];
+            }
+            lineSegments = copy;
+        }
+        lineSegments[lsIndex++] = ls;
     }
 
     // the number of line segments
     public int numberOfSegments() {
-        return size;
+        return lsIndex;
     }
 
     // the line segments
     public LineSegment[] segments() {
-        LineSegment[] shrinked = new LineSegment[size];
-        for (int i = 0; i < size; i++) {
+        LineSegment[] shrinked = new LineSegment[lsIndex];
+        for (int i = 0; i < lsIndex; i++) {
             shrinked[i] = lineSegments[i];
         }
         return shrinked;
