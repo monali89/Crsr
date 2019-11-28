@@ -86,8 +86,8 @@ public class PointTest {
         points[4] = new Point(5,5);
         FastCollinearPoints fc = new FastCollinearPoints(points);
         LineSegment[] ls = fc.segments();
-        Assert.assertEquals(1, fc.numberOfSegments());
-        Assert.assertEquals("(1, 1) -> (5, 5)", ls[0].toString());
+        Assert.assertEquals(fc.numberOfSegments(), 1);
+        Assert.assertEquals(ls[0].toString(),"(1, 1) -> (5, 5)");
     }
 
     @Test
@@ -209,6 +209,41 @@ public class PointTest {
             }
         }
         Assert.assertTrue(false);
+    }
+
+    @Test
+    public void test_fastCollinear_from_course(){
+        Point[] points = new Point[6];
+        points[0] = new Point(19000, 10000);
+        points[1] = new Point(18000, 10000);
+        points[2] = new Point(32000, 10000);
+        points[3] = new Point(21000, 10000);
+        points[4] = new Point( 1234,  5678);
+        points[5] = new Point(14000, 10000);
+        for (int i = 0; i < points.length; i++) {
+            System.out.println(points[i] + " - " + new Point(14000, 10000).slopeTo(points[i]));
+        }
+        FastCollinearPoints fc = new FastCollinearPoints(points);
+        LineSegment[] ls = fc.segments();
+        Assert.assertEquals(ls[0].toString(), "(14000, 10000) -> (32000, 10000)");
+    }
+
+    @Test
+    public void test_fastCollinear_from_course_2(){
+        Point[] points = new Point[8];
+        points[0] = new Point(10000,     0);
+        points[1] = new Point(    0, 10000);
+        points[2] = new Point( 3000,  7000);
+        points[3] = new Point( 7000,  3000);
+        points[4] = new Point(20000, 21000);
+        points[5] = new Point( 3000,  4000);
+        points[6] = new Point(14000, 15000);
+        points[7] = new Point( 6000,  7000);
+        FastCollinearPoints fc = new FastCollinearPoints(points);
+        LineSegment[] ls = fc.segments();
+        Assert.assertEquals(fc.numberOfSegments(), 2);
+        Assert.assertEquals(ls[1].toString(), "(3000, 4000) -> (20000, 21000)");
+        Assert.assertEquals(ls[0].toString(), "(0, 10000) -> (10000, 0)");
     }
 
     private Point getPointBetween(Point min, Point max, double slope){
