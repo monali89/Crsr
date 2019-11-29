@@ -1,7 +1,9 @@
 package week4;
 
+import edu.princeton.cs.algs4.MaxPQ;
 import edu.princeton.cs.algs4.MinPQ;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -14,7 +16,8 @@ public class Solver {
 
     private int moves;
     private MinPQ<Board> openList;
-    private MinPQ<Board> closeList;
+    //private MinPQ<Board> closeList;
+    private MaxPQ<Board> closeList;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial){
@@ -23,8 +26,8 @@ public class Solver {
 
         // Initializing both open and closed list to empty
         openList = new MinPQ<Board>(new ByFValue());
-        closeList = new MinPQ<Board>(new ByFValue());
-        moves = 0;
+        closeList = new MaxPQ<Board>(new ByFValue());
+        moves = -1;
         openList.insert(initial);
         Board previous = null;
 
@@ -56,9 +59,9 @@ public class Solver {
                 }
 
                 // Get the f value for this node
-                int g = moves + 1; // Distance from start to this node OR No. of moves made so far
-                int h = child.manhattan(); // Distance from this to goal node OR Manhattan distance
-                int f = g + h;
+                //int g = moves + 1; // Distance from start to this node OR No. of moves made so far
+                //int h = child.manhattan(); // Distance from this to goal node OR Manhattan distance
+                //int f = g + h;
 
                 // Check if child is already in open list
                 // And if it exists compare the number of
@@ -69,11 +72,7 @@ public class Solver {
                 Iterator<Board> openItr = openList.iterator();
                 while (openItr.hasNext()) {
                     Board child_in_open = openItr.next();
-                    if (child_in_open.equals(child)) {
-                        /*int g_child_in_open = 0;
-                        if (g > g_child_in_open) continue;*/
-                        continue;
-                    }
+                    if (child_in_open.equals(child)) continue;
                     if (child_in_open.equals(previous)) continue;
                 }
                 openList.insert(child);
@@ -94,9 +93,6 @@ public class Solver {
             if (f1 < f2) return -1;
             else if (f1 > f2) return 1;
             else return 0;
-            /*if (b1.manhattan() < b2.manhattan()) return -1;
-            else if (b1.manhattan() > b2.manhattan()) return 1;
-            else return 0;*/
         }
     }
 
@@ -118,7 +114,7 @@ public class Solver {
     // test client (see below)
     public static void main(String[] args){
 
-        int[][] b = new int[][]{{1,0,3},{4,2,5},{7,8,6}};
+        int[][] b = new int[][]{{0,1,3},{4,2,5},{7,8,6}};
         Board obj = new Board(b);
         Solver s = new Solver(obj);
 
@@ -129,5 +125,14 @@ public class Solver {
         while (itr.hasNext()) {
             System.out.println(itr.next().toString());
         }
+
+        // TEMP - for un solvable board
+        /*int[][] b = new int[][]{{1,2,3},{4,5,6},{7,8,0}};
+        Board obj = new Board(b);
+        Solver s = new Solver(obj);
+        Iterator<Board> itr = s.solution().iterator();
+        while (itr.hasNext()) {
+            System.out.println(itr.next().toString());
+        }*/
     }
 }
