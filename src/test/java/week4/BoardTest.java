@@ -83,6 +83,9 @@ public class BoardTest {
         Board right = new Board(new int[][]{{1,0,2},{3,4,5},{6,7,8}});
         Board bottom = new Board(new int[][]{{3,1,2},{0,4,5},{6,7,8}});
         //Board left = null;
+        for (Board neighbor: obj.neighbors()) {
+            System.out.println(neighbor.toString());
+        }
         Assert.assertEquals(true, itr.hasNext());
         Assert.assertEquals(true, itr.next().equals(right));
         Assert.assertEquals(true, itr.hasNext());
@@ -252,7 +255,37 @@ public class BoardTest {
 
     @Test
     public void test15_twin() {
-
+        int[][] b = new int[][]{{1,2,3},{4,5,6},{7,8,0}};
+        Board obj = new Board(b);
+        Board twin1 = obj.twin();
+        Board twin2 = obj.twin();
+        Assert.assertEquals(true, twin1.equals(twin2));
     }
 
+    @Test
+    public void test16_Misc() {
+
+        Board b = new Board(new int[][]{
+                {1,2,3},
+                {4,5,0},
+                {7,8,6}
+        });
+
+        for (Board neighbor: b.neighbors()) {
+            System.out.println(neighbor.manhattan());
+            System.out.println(neighbor);
+        }
+    }
+
+
 }
+
+
+
+
+
+
+
+
+
+

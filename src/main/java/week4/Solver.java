@@ -1,138 +1,128 @@
 package week4;
 
-import edu.princeton.cs.algs4.MaxPQ;
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
-
-import java.util.Arrays;
+import edu.princeton.cs.algs4.Stack;
+import edu.princeton.cs.algs4.StdOut;
 import java.util.Comparator;
-import java.util.Iterator;
-
-/**
- * Date: 10/23/2019
- * @author: Monali
- */
 
 public class Solver {
 
-    private int moves;
-    private MinPQ<Board> openList;
-    //private MinPQ<Board> closeList;
-    private MaxPQ<Board> closeList;
-
-    // find a solution to the initial board (using the A* algorithm)
-    public Solver(Board initial){
-
-        if (initial == null) throw new IllegalArgumentException();
-
-        // Initializing both open and closed list to empty
-        openList = new MinPQ<Board>(new ByFValue());
-        closeList = new MaxPQ<Board>(new ByFValue());
-        moves = -1;
-        openList.insert(initial);
-        Board previous = null;
-
-        // loop until the goal node is found
-        while (!openList.isEmpty()) {
-
-            moves++;
-
-            // Get a node from the openlist with least f value (man dist + no. of moves made so far)
-            Board curr = openList.delMin();
-            closeList.insert(curr);
-
-            // if goal node is found stop and backtrack to create the complete path from start until here
-            if (curr.isGoal()) {
-                return;
-            }
-
-            // Goal is not yet found
-            // Get all the neighbors/child of the current node
-            Iterable<Board> neighbors = curr.neighbors();
-
-            // For each neighbor/child node do this
-            for (Board child: neighbors) {
-
-                // If child is in the closed list (already visited) skip it and check next
-                Iterator<Board> closeItr = closeList.iterator();
-                while (closeItr.hasNext()) {
-                    if (closeItr.next().equals(child)) continue;
-                }
-
-                // Get the f value for this node
-                //int g = moves + 1; // Distance from start to this node OR No. of moves made so far
-                //int h = child.manhattan(); // Distance from this to goal node OR Manhattan distance
-                //int f = g + h;
-
-                // Check if child is already in open list
-                // And if it exists compare the number of
-                // Previous moves vs. current moves to reach to this node
-                // If previous moves are less do not add current child to open list
-                // If not add it to open list
-
-                Iterator<Board> openItr = openList.iterator();
-                while (openItr.hasNext()) {
-                    Board child_in_open = openItr.next();
-                    if (child_in_open.equals(child)) continue;
-                    if (child_in_open.equals(previous)) continue;
-                }
-                openList.insert(child);
-            }
-            previous = curr;
+    private class Node {
+        Board board;
+        Node previous;
+        int manhattanDist;
+        int m;
+        Node(Board board, Node previous, int moves) {
+            this.board = board;
+            this.previous = previous;
+            this.manhattanDist = board.manhattan();
+            this.m = moves;
         }
     }
 
-    private static class ByFValue implements Comparator<Board> {
-        private int m;
-        public ByFValue() {
-            m = 0;
+    private boolean solvable;
+    private Iterable<Board> solution;
+    private int moves;
+
+    // find a solution to the initial board (using the A* algorithm)
+    public Solver(Board initial) {
+
+        if (initial == null) throw new IllegalArgumentException();
+
+        Board twin = initial.twin();
+        MinPQ<Node> openListOrig = new MinPQ<Node>(new ByFValue());
+        MinPQ<Node> openListTwin = new MinPQ<Node>(new ByFValue());
+
+        openListOrig.insert(new Node(initial, null, 0));
+        openListTwin.insert(new Node(twin, null, 0));
+
+        while (!openListOrig.isEmpty() && !openListTwin.isEmpty()) {
+
+            Node currNodeOrig = openListOrig.delMin();
+            Node currNodeTwin = openListTwin.delMin();
+            moves = currNodeOrig.m;
+
+            if (currNodeOrig.board.isGoal() && moves > 0) {
+                Stack<Board> stack = new Stack<Board>();
+                Node curr = currNodeOrig;
+                while (curr != null) {
+                    stack.push(curr.board);
+                    curr = curr.previous;
+                }
+                solvable = true;
+                solution = stack;
+                return;
+            }
+            if (currNodeTwin.board.isGoal()) {
+                solvable = false;
+                solution = null;
+                moves = -1;
+                return;
+            }
+
+            Iterable<Board> neighborsOrig = currNodeOrig.board.neighbors();
+            for (Board child: neighborsOrig) {
+                Node childNode = new Node(child, currNodeOrig, currNodeOrig.m+1);
+                if (currNodeOrig.previous != null && child.equals(currNodeOrig.previous.board)) continue;
+                openListOrig.insert(childNode);
+            }
+
+            Iterable<Board> neighborsTwin = currNodeTwin.board.neighbors();
+            for (Board child: neighborsTwin) {
+                Node childNode = new Node(child, currNodeTwin, currNodeTwin.m+1);
+                if (currNodeTwin.previous != null && child.equals(currNodeTwin.previous.board)) continue;
+                openListTwin.insert(childNode);
+            }
         }
-        public int compare(Board b1, Board b2) {
-            m = m + 1;
-            int f1 = m + b1.manhattan();
-            int f2 = m + b2.manhattan();
+    }
+
+    // is the initial board solvable? (see below)
+    public boolean isSolvable() {
+        return solvable;
+    }
+
+    // min number of moves to solve initial board
+    public int moves() {
+        return moves;
+    }
+
+    // sequence of boards in a shortest solution
+    public Iterable<Board> solution() {
+        return solution;
+    }
+
+    // Custom comparator by F value of a node (moves + manhattan distance)
+    private static class ByFValue implements Comparator<Node> {
+        public int compare(Node n1, Node n2) {
+            int f1 = n1.m + n1.manhattanDist;
+            int f2 = n2.m + n2.manhattanDist;
             if (f1 < f2) return -1;
             else if (f1 > f2) return 1;
             else return 0;
         }
     }
 
-    // is the initial board solvable? (see below)
-    public boolean isSolvable(){
-        return false;
-    }
-
-    // min number of moves to solve initial board
-    public int moves(){
-        return moves;
-    }
-
-    // sequence of boards in a shortest solution
-    public Iterable<Board> solution(){
-        return closeList;
-    }
-
     // test client (see below)
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
-        int[][] b = new int[][]{{0,1,3},{4,2,5},{7,8,6}};
-        Board obj = new Board(b);
-        Solver s = new Solver(obj);
-
-        System.out.println("Is Solvable? " + s.isSolvable());
-        System.out.println("No. of moves: " + s.moves());
-
-        Iterator<Board> itr = s.solution().iterator();
-        while (itr.hasNext()) {
-            System.out.println(itr.next().toString());
+        // create initial board from file
+        In in = new In(args[0]);
+        int n = in.readInt();
+        int[][] tiles = new int[n][n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                tiles[i][j] = in.readInt();
+        Board initial = new Board(tiles);
+        // solve the puzzle
+        Solver solver = new Solver(initial);
+        // print solution to standard output
+        if (!solver.isSolvable())
+            StdOut.println("No solution possible");
+        else {
+            StdOut.println("Minimum number of moves = " + solver.moves());
+            for (Board board : solver.solution())
+                StdOut.println(board);
         }
-
-        // TEMP - for un solvable board
-        /*int[][] b = new int[][]{{1,2,3},{4,5,6},{7,8,0}};
-        Board obj = new Board(b);
-        Solver s = new Solver(obj);
-        Iterator<Board> itr = s.solution().iterator();
-        while (itr.hasNext()) {
-            System.out.println(itr.next().toString());
-        }*/
     }
 }
