@@ -6,36 +6,34 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Date: 12/4/2019
- * @author: Monali
+ * @author Monali L on 12/9/2019
  */
 
-public class PointSetTest {
-
+public class KdTreeTest {
     @Test
     public void test01_constructor_is_created() {
         Point2D p = new Point2D(23,23);
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         Assert.assertTrue(true);
     }
 
     @Test
     public void test02_isEmpty_true() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         Assert.assertTrue(obj.isEmpty());
     }
 
     @Test
     public void test02_isEmpty_false() {
         Point2D p = new Point2D(23,23);
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.insert(p);
         Assert.assertFalse(obj.isEmpty());
     }
 
     @Test
     public void test03_size_unique_points() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.insert(new Point2D(23,23));
         obj.insert(new Point2D(12,23));
         obj.insert(new Point2D(23,16));
@@ -45,7 +43,7 @@ public class PointSetTest {
 
     @Test
     public void test03_size_duplicate_points() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.insert(new Point2D(23,23));
         obj.insert(new Point2D(12,23));
         obj.insert(new Point2D(23,16));
@@ -56,20 +54,20 @@ public class PointSetTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void test04_insert_exception() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.insert(null);
     }
 
     @Test
     public void test04_insert_successful() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.insert(new Point2D(23,23));
         Assert.assertEquals(1, obj.size());
     }
 
     @Test
     public void test04_insert_already_present() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.insert(new Point2D(23,23));
         obj.insert(new Point2D(12,23));
         obj.insert(new Point2D(23,16));
@@ -81,13 +79,13 @@ public class PointSetTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void test05_contains_exception() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.contains(null);
     }
 
     @Test
     public void test05_contains_true() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.insert(new Point2D(23,23));
         obj.insert(new Point2D(12,23));
         obj.insert(new Point2D(23,16));
@@ -97,7 +95,7 @@ public class PointSetTest {
 
     @Test
     public void test05_contains_false() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.insert(new Point2D(23,23));
         obj.insert(new Point2D(12,23));
         obj.insert(new Point2D(23,16));
@@ -110,13 +108,13 @@ public class PointSetTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void test07_range_exception() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.range(null);
     }
 
     @Test
     public void test07_range_points_are_inside() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         Point2D point = new Point2D(23, 23);
         obj.insert(point);
         RectHV rect = new RectHV(0,0,100,100);
@@ -127,7 +125,7 @@ public class PointSetTest {
 
     @Test
     public void test07_range_point_on_left_side() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         Point2D point = new Point2D(100, 70);
         obj.insert(point);
         RectHV rect = new RectHV(0,0,100,100);
@@ -138,7 +136,7 @@ public class PointSetTest {
 
     @Test
     public void test07_range_point_on_right_side() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         Point2D point = new Point2D(60, 0);
         obj.insert(point);
         RectHV rect = new RectHV(0,0,100,100);
@@ -149,7 +147,7 @@ public class PointSetTest {
 
     @Test
     public void test07_range_point_on_top_side() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         Point2D point = new Point2D(40, 100);
         obj.insert(point);
         RectHV rect = new RectHV(0,0,100,100);
@@ -160,7 +158,7 @@ public class PointSetTest {
 
     @Test
     public void test07_range_point_on_bottom_side() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         Point2D point = new Point2D(50, 0);
         obj.insert(point);
         RectHV rect = new RectHV(0,0,100,100);
@@ -171,22 +169,54 @@ public class PointSetTest {
 
     @Test
     public void test07_range_no_points_are_inside() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         Point2D point = new Point2D(-10, -10);
         obj.insert(point);
         RectHV rect = new RectHV(0,0,100,100);
         Iterable<Point2D> itr = obj.range(rect);
     }
 
+    @Test
+    public void test07_range_from_course1() {
+        KdTree obj = new KdTree();
+        obj.insert(new Point2D(0.625, 0.875));
+        obj.insert(new Point2D(0.0, 0.0    ));
+        obj.insert(new Point2D(0.625, 0.25 ));
+        obj.insert(new Point2D(0.625, 0.5  ));
+        obj.insert(new Point2D(0.125, 0.0  ));
+        obj.insert(new Point2D(0.25, 0.125 ));
+        obj.insert(new Point2D(0.125, 0.25 ));
+        obj.insert(new Point2D(0.875, 0.375));
+        obj.insert(new Point2D(0.5, 0.25   ));
+        obj.insert(new Point2D(0.0, 1.0    ));
+        obj.insert(new Point2D(0.375, 0.875));
+        obj.insert(new Point2D(0.375, 0.375));
+        obj.insert(new Point2D(0.875, 0.875));
+        obj.insert(new Point2D(0.625, 0.75 ));
+        obj.insert(new Point2D(0.375, 0.75 ));
+        obj.insert(new Point2D(0.375, 0.25 ));
+        obj.insert(new Point2D(0.875, 0.75 ));
+        obj.insert(new Point2D(0.875, 0.625));
+        obj.insert(new Point2D(0.75, 0.125 ));
+        obj.insert(new Point2D(0.75, 0.875 ));
+        RectHV rect = new RectHV(0.0, 0.125,0.125, 0.875);
+        Point2D point = new Point2D(0.125, 0.25);
+        Iterable<Point2D> itr = obj.range(rect);
+        System.out.println("Inside rect - " + itr);
+        //obj.tempPrint();
+        for (Point2D p: itr)
+            Assert.assertTrue(p.equals(point));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void test08_nearest_exception() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         obj.nearest(null);
     }
 
     @Test
     public void test08_nearest_not_null_set() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         Point2D[] points = new Point2D[4];
         points[0] = new Point2D(23,23);
         points[1] = new Point2D(12,23);
@@ -198,8 +228,7 @@ public class PointSetTest {
 
     @Test
     public void test08_nearest_null_set() {
-        PointSET obj = new PointSET();
+        KdTree obj = new KdTree();
         Assert.assertEquals(null, obj.nearest(new Point2D(5,5)));
     }
-
 }

@@ -3,7 +3,6 @@ package week5;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -15,7 +14,7 @@ import java.util.TreeSet;
 
 public class PointSET {
 
-    private SortedSet<Point2D> pointSet;
+    private final SortedSet<Point2D> pointSet;
 
     // construct an empty set of points
     public PointSET() {
@@ -73,7 +72,7 @@ public class PointSET {
         Point2D minPoint = null;
         while (itr.hasNext()) {
             Point2D tempP = itr.next();
-            double thisDist = tempP.distanceTo(p);
+            double thisDist = tempP.distanceSquaredTo(p);
             if (thisDist <= minDist) {
                 minPoint = tempP;
                 minDist = thisDist;
@@ -86,10 +85,10 @@ public class PointSET {
     public static void main(String[] args) {
         PointSET obj = new PointSET();
         Point2D[] points = new Point2D[4];
-        points[0] = new Point2D(100,200);
-        points[1] = new Point2D(-50,100);
-        points[2] = new Point2D(23,16);
-        points[3] = new Point2D(10,9);
+        points[0] = new Point2D(100, 200);
+        points[1] = new Point2D(-50, 100);
+        points[2] = new Point2D(23, 16);
+        points[3] = new Point2D(10, 9);
         for (int i = 0; i < points.length; i++) obj.insert(points[i]);
         obj.draw();
     }
