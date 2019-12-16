@@ -68,7 +68,7 @@ public class PointSET {
     public Point2D nearest(Point2D p) {
         if (p == null) throw new IllegalArgumentException();
         Iterator<Point2D> itr = pointSet.iterator();
-        double minDist = Double.MAX_VALUE;
+        double minDist = Double.POSITIVE_INFINITY;
         Point2D minPoint = null;
         while (itr.hasNext()) {
             Point2D tempP = itr.next();

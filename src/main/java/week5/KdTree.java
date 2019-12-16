@@ -23,11 +23,15 @@ public class KdTree {
         Node left;
         Node right;
         Color color;
-        Node(Point2D p, Color color) {
+        RectHV leftBottom;
+        RectHV rightTop;
+        Node(Point2D p, Color color, RectHV leftBottom, RectHV rightTop) {
             this.point = p;
             this.left = null;
             this.right = null;
             this.color = color;
+            this.leftBottom = leftBottom;
+            this.rightTop = rightTop;
         }
     }
 
@@ -55,7 +59,9 @@ public class KdTree {
 
     private void insertHelper(Point2D p) {
         if (root == null) {
-            root = new Node(p, Color.RED);
+            root = new Node(p, Color.RED,
+                    new RectHV(0, 0, p.x(), 1),
+                    new RectHV(p.x(), 0, 1, 1));
             size++;
             return;
         }
@@ -66,30 +72,42 @@ public class KdTree {
             if (curr.color == Color.RED) {
                 if (p.x() < currPoint.x()) {
                     if (curr.left == null) {
-                        curr.left = new Node(p, Color.BLACK);
+                        RectHV parent = curr.leftBottom;
+                        curr.left = new Node(p, Color.BLACK,
+                                new RectHV(parent.xmin(), parent.ymin(), parent.xmax(), p.y()), // Bottom
+                                new RectHV(parent.xmin(), p.y(), parent.xmax(), parent.ymax())); // Top
                         size++;
                         return;
                     }
                     curr = curr.left;
                 } else {
                     if (curr.right == null) {
-                        curr.right = new Node(p, Color.BLACK);
+                        RectHV parent = curr.rightTop;
+                        curr.right = new Node(p, Color.BLACK,
+                                new RectHV(parent.xmin(), parent.ymin(), parent.xmax(), p.y()), // Bottom
+                                new RectHV(parent.xmin(), p.y(), parent.xmax(), parent.ymax())); // Top
                         size++;
                         return;
                     }
                     curr = curr.right;
                 }
-            } else {
+            } else if (curr.color == Color.BLACK) {
                 if (p.y() < currPoint.y()) {
                     if (curr.left == null) {
-                        curr.left = new Node(p, Color.BLACK);
+                        RectHV parent = curr.leftBottom;
+                        curr.left = new Node(p, Color.RED,
+                                new RectHV(parent.xmin(), parent.ymin(), p.x(), parent.ymax()),  // Left
+                                new RectHV(p.x(), parent.ymin(), parent.xmax(), parent.ymax())); // Right
                         size++;
                         return;
                     }
                     curr = curr.left;
                 } else {
                     if (curr.right == null) {
-                        curr.right = new Node(p, Color.BLACK);
+                        RectHV parent = curr.rightTop;
+                        curr.right = new Node(p, Color.RED,
+                                new RectHV(parent.xmin(), parent.ymin(), p.x(), parent.ymax()),  // Left
+                                new RectHV(p.x(), parent.ymin(), parent.xmax(), parent.ymax())); // Right
                         size++;
                         return;
                     }
@@ -137,11 +155,14 @@ public class KdTree {
     }
     private void rangeHelper(Node node, RectHV rect, List<Point2D> point2DS) {
         if (node == null) return;
-        if (rect.contains(node.point)) point2DS.add(node.point);
-        //if (node.left != null && rect.contains(node.left.point))
+        Point2D currPoint = node.point;
+        if (rect.contains(currPoint)) point2DS.add(currPoint);
+        if (rect.intersects(node.leftBottom)) {
             rangeHelper(node.left, rect, point2DS);
-        //if (node.right != null && rect.contains(node.right.point))
+        }
+        if (rect.intersects(node.rightTop)) {
             rangeHelper(node.right, rect, point2DS);
+        }
     }
 
     // a nearest neighbor in the set to point p; null if the set is empty
@@ -167,12 +188,6 @@ public class KdTree {
     public static void main(String[] args) {
         KdTree obj = new KdTree();
 
-        // Test1
-        /*obj.insert(new Point2D(23,23));
-        obj.insert(new Point2D(12,23));
-        obj.insert(new Point2D(23,16));
-        obj.insert(new Point2D(10,9));*/
-
         // Test 2
         obj.insert(new Point2D(0.7, 0.2));
         obj.insert(new Point2D(0.5, 0.4));
@@ -182,5 +197,8 @@ public class KdTree {
 
         // obj.tempPrint();
         System.out.println(obj.contains(new Point2D(0.4, 0.7)));
+        obj.insert(new Point2D(0.625, 0.875));
+        System.out.println(obj.root.leftBottom);
+        System.out.println(obj.root.rightTop);
     }
 }

@@ -25,7 +25,7 @@ public class KdTreeTest {
 
     @Test
     public void test02_isEmpty_false() {
-        Point2D p = new Point2D(23,23);
+        Point2D p = new Point2D(.23,.23);
         KdTree obj = new KdTree();
         obj.insert(p);
         Assert.assertFalse(obj.isEmpty());
@@ -34,21 +34,21 @@ public class KdTreeTest {
     @Test
     public void test03_size_unique_points() {
         KdTree obj = new KdTree();
-        obj.insert(new Point2D(23,23));
-        obj.insert(new Point2D(12,23));
-        obj.insert(new Point2D(23,16));
-        obj.insert(new Point2D(10,9));
+        obj.insert(new Point2D(.23,.23));
+        obj.insert(new Point2D(.12,.23));
+        obj.insert(new Point2D(.23,.16));
+        obj.insert(new Point2D(.10,.9));
         Assert.assertEquals(4, obj.size());
     }
 
     @Test
     public void test03_size_duplicate_points() {
         KdTree obj = new KdTree();
-        obj.insert(new Point2D(23,23));
-        obj.insert(new Point2D(12,23));
-        obj.insert(new Point2D(23,16));
-        obj.insert(new Point2D(10,9));
-        obj.insert(new Point2D(23,23));
+        obj.insert(new Point2D(.23,.23));
+        obj.insert(new Point2D(.12,.23));
+        obj.insert(new Point2D(.23,.16));
+        obj.insert(new Point2D(.10,.9));
+        obj.insert(new Point2D(.23,.23));
         Assert.assertEquals(4, obj.size());
     }
 
@@ -68,12 +68,12 @@ public class KdTreeTest {
     @Test
     public void test04_insert_already_present() {
         KdTree obj = new KdTree();
-        obj.insert(new Point2D(23,23));
-        obj.insert(new Point2D(12,23));
-        obj.insert(new Point2D(23,16));
-        obj.insert(new Point2D(10,9));
+        obj.insert(new Point2D(.23,.23));
+        obj.insert(new Point2D(.12,.23));
+        obj.insert(new Point2D(.23,.16));
+        obj.insert(new Point2D(.10,.9));
         Assert.assertEquals(4, obj.size());
-        obj.insert(new Point2D(23,23));
+        obj.insert(new Point2D(.23,.23));
         Assert.assertEquals(4, obj.size());
     }
 
@@ -86,20 +86,20 @@ public class KdTreeTest {
     @Test
     public void test05_contains_true() {
         KdTree obj = new KdTree();
-        obj.insert(new Point2D(23,23));
-        obj.insert(new Point2D(12,23));
-        obj.insert(new Point2D(23,16));
-        obj.insert(new Point2D(10,9));
+        obj.insert(new Point2D(.23,.23));
+        obj.insert(new Point2D(.12,.23));
+        obj.insert(new Point2D(.23,.16));
+        obj.insert(new Point2D(.10,.9));
         Assert.assertEquals(true, obj.contains(new Point2D(12,23)));
     }
 
     @Test
     public void test05_contains_false() {
         KdTree obj = new KdTree();
-        obj.insert(new Point2D(23,23));
-        obj.insert(new Point2D(12,23));
-        obj.insert(new Point2D(23,16));
-        obj.insert(new Point2D(10,9));
+        obj.insert(new Point2D(.23,.23));
+        obj.insert(new Point2D(.12,.23));
+        obj.insert(new Point2D(.23,.16));
+        obj.insert(new Point2D(.10,.9));
         Assert.assertEquals(false, obj.contains(new Point2D(21,23)));
     }
 
@@ -115,9 +115,9 @@ public class KdTreeTest {
     @Test
     public void test07_range_points_are_inside() {
         KdTree obj = new KdTree();
-        Point2D point = new Point2D(23, 23);
+        Point2D point = new Point2D(.23, .23);
         obj.insert(point);
-        RectHV rect = new RectHV(0,0,100,100);
+        RectHV rect = new RectHV(0,0,1,1);
         Iterable<Point2D> itr = obj.range(rect);
         for (Point2D p: itr)
             Assert.assertTrue(p.equals(point));
