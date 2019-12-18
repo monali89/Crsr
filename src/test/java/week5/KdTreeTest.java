@@ -159,9 +159,9 @@ public class KdTreeTest {
     @Test
     public void test07_range_point_on_bottom_side() {
         KdTree obj = new KdTree();
-        Point2D point = new Point2D(50, 0);
+        Point2D point = new Point2D(.50, 0);
         obj.insert(point);
-        RectHV rect = new RectHV(0,0,100,100);
+        RectHV rect = new RectHV(0,0,.100,.100);
         Iterable<Point2D> itr = obj.range(rect);
         for (Point2D p: itr)
             Assert.assertTrue(p.equals(point));
@@ -170,9 +170,9 @@ public class KdTreeTest {
     @Test
     public void test07_range_no_points_are_inside() {
         KdTree obj = new KdTree();
-        Point2D point = new Point2D(-10, -10);
+        Point2D point = new Point2D(.10, .10);
         obj.insert(point);
-        RectHV rect = new RectHV(0,0,100,100);
+        RectHV rect = new RectHV(0,0,.100,.100);
         Iterable<Point2D> itr = obj.range(rect);
     }
 
@@ -218,17 +218,53 @@ public class KdTreeTest {
     public void test08_nearest_not_null_set() {
         KdTree obj = new KdTree();
         Point2D[] points = new Point2D[4];
-        points[0] = new Point2D(23,23);
-        points[1] = new Point2D(12,23);
-        points[2] = new Point2D(23,16);
-        points[3] = new Point2D(10,9);
+        points[0] = new Point2D(.23,.23);
+        points[1] = new Point2D(.12,.23);
+        points[2] = new Point2D(.23,.16);
+        points[3] = new Point2D(.10,.9);
         for (int i = 0; i < 4; i++) obj.insert(points[i]);
-        Assert.assertTrue("Nearest Point: " + obj.nearest(new Point2D(5,5)), obj.nearest(new Point2D(5,5)).equals(new Point2D(10, 9)));
+        Assert.assertTrue("Nearest Point: " + obj.nearest(new Point2D(.5,.5)), obj.nearest(new Point2D(.5,.5)).equals(new Point2D(.10, .9)));
     }
 
     @Test
     public void test08_nearest_null_set() {
         KdTree obj = new KdTree();
         Assert.assertEquals(null, obj.nearest(new Point2D(5,5)));
+    }
+
+    @Test
+    public void test08_nearest_from_course() {
+        KdTree obj = new KdTree();
+        Point2D[] points = new Point2D[5];
+        points[0] = new Point2D(.7,.2);
+        points[1] = new Point2D(.5,.4);
+        points[2] = new Point2D(.2,.3);
+        points[3] = new Point2D(.4,.7);
+        points[4] = new Point2D(.9,.6);
+        for (int i = 0; i < points.length; i++) obj.insert(points[i]);
+        //obj.tempPrint();
+        Point2D queryPoint = new Point2D(0.517, 0.956);
+        Point2D expected = new Point2D(.4, .7);
+        Point2D actual = obj.nearest(queryPoint);
+        Assert.assertEquals(expected.toString(), obj.nearest(queryPoint).toString());
+    }
+
+    @Test
+    public void test08_nearest_from_course_2() {
+        KdTree obj = new KdTree();
+        obj.insert(new Point2D(0.372, 0.497));
+        obj.insert(new Point2D(0.564, 0.413));
+        obj.insert(new Point2D(0.226, 0.577));
+        obj.insert(new Point2D(0.144, 0.179));
+        obj.insert(new Point2D(0.083, 0.51));
+        obj.insert(new Point2D(0.32, 0.708));
+        obj.insert(new Point2D(0.417, 0.362));
+        obj.insert(new Point2D(0.862, 0.825));
+        obj.insert(new Point2D(0.785, 0.725));
+        obj.insert(new Point2D(0.499, 0.208));
+        Point2D queryPoint = new Point2D(0.767, 0.194);
+        Point2D expected = new Point2D(0.499, 0.208);
+        Point2D actual = obj.nearest(queryPoint);
+        Assert.assertEquals(expected.toString(), obj.nearest(queryPoint).toString());
     }
 }
