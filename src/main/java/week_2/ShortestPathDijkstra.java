@@ -3,6 +3,7 @@ package week_2;
 import edu.princeton.cs.algs4.DirectedEdge;
 import edu.princeton.cs.algs4.EdgeWeightedDigraph;
 import edu.princeton.cs.algs4.IndexMinPQ;
+import edu.princeton.cs.algs4.Topological;
 
 /**
  * @author Monali L on 3/3/2020
@@ -86,5 +87,9 @@ public class ShortestPathDijkstra {
         ewdg.addEdge(new DirectedEdge(7,2,7));
 
         ShortestPathDijkstra spd = new ShortestPathDijkstra(ewdg, 0);
+
+        Topological topological = new Topological(ewdg);
+        System.out.println("DEBUG: T hasOrder - " + topological.hasOrder());
+        System.out.println("DEBUG: T Order - " + topological.order());
     }
 }
