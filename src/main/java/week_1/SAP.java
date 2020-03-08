@@ -1,6 +1,9 @@
 package week_1;
 
 import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdIn;
+import edu.princeton.cs.algs4.StdOut;
 
 /**
  * @author Monali L on 2/8/2020
@@ -32,7 +35,16 @@ public class SAP {
 
     // do unit testing of this class
     public static void main(String[] args) {
-
+        In in = new In(args[0]);
+        Digraph G = new Digraph(in);
+        SAP sap = new SAP(G);
+        while (!StdIn.isEmpty()) {
+            int v = StdIn.readInt();
+            int w = StdIn.readInt();
+            int length   = sap.length(v, w);
+            int ancestor = sap.ancestor(v, w);
+            StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
+        }
     }
 
 }
