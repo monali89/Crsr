@@ -111,57 +111,117 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        return null;
+
+        double[][] distTo = new double[height()][width()];
+        int[][] edgeTo = new int[height()][width()];
+        double min_total_energy = Double.POSITIVE_INFINITY;
+        int[] min_array = new int[width()];
+
+        for (int y = 0; y < height(); y++) {
+            distTo[y][0] = 1000.0;
+            edgeTo[y][0] = y;
+            int prev_y = y;
+            for (int x = 0; x < width()-1; x++) {
+                double min_energy = Double.POSITIVE_INFINITY;
+                for (int i = -1; i <= 1; i++) {
+                    if (prev_y + i*1 <= -1 || prev_y + i*1 >= height()) continue;
+                    double this_energy = energy(x+1, prev_y + i*1);
+                    if (this_energy < min_energy) {
+                        distTo[y][x+1] = distTo[y][x] + this_energy;
+                        edgeTo[y][x+1] = prev_y + i*1;
+                        min_energy = this_energy;
+                    }
+                }
+                prev_y = edgeTo[y][x+1];
+            }
+            if (distTo[y][width()-1] < min_total_energy) {
+                min_total_energy = distTo[y][width()-1];
+                min_array = edgeTo[y];
+            }
+        }
+
+        System.out.println("DEBUG: Final distance - " + min_total_energy);
+        System.out.println("DEBUG: Edges - ");
+        for (int i = 0; i < min_array.length; i++) {
+            System.out.println("Edge[" + i + "] - " + min_array[i]);
+        }
+
+        return min_array;
     }
 
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
+        double[][] distTo = new double[width()][height()];
+        int[][] edgeTo = new int[width()][height()];
+        double min_total_energy = Double.POSITIVE_INFINITY;
+        int[] min_array = new int[height()];
 
-        return null;
-    }
-
-    public void verticalSeamHelper(int start) {
-
-        double[] distTo = new double[height()];
-        int[] edgeTo = new int[height()];
-        distTo[0] = 1000.0;
-        edgeTo[0] = start;
-
-        int x = start;
-
-        for (int y = 0; y < height()-1; y++) {
-            double current_dist = distTo[y];
-            double min_energy = Double.POSITIVE_INFINITY;
-            for (int i = -1; i <= 1; i++) {
-                if (x + i*1 < -1 || x + i*1 >= width()) continue;
-                double this_energy = energy(x + i*1, y+1);
-                if (this_energy < min_energy) {
-                    distTo[y+1] = distTo[y] + this_energy;
-                    edgeTo[y+1] = x + i*1;
-                    min_energy = this_energy;
+        for (int x = 0; x < width(); x++) {
+            distTo[x][0] = 1000.0;
+            edgeTo[x][0] = x;
+            int prev_x = x;
+            for (int y = 0; y < height()-1; y++) {
+                double min_energy = Double.POSITIVE_INFINITY;
+                for (int i = -1; i <= 1; i++) {
+                    if (prev_x + i*1 <= -1 || prev_x + i*1 >= width()) continue;
+                    double this_energy = energy(prev_x + i*1, y+1);
+                    if (this_energy < min_energy) {
+                        distTo[x][y+1] = distTo[x][y] + this_energy;
+                        edgeTo[x][y+1] = prev_x + i*1;
+                        min_energy = this_energy;
+                    }
                 }
+                prev_x = edgeTo[x][y+1];
             }
-            x = edgeTo[y+1];
+            if (distTo[x][height()-1] < min_total_energy) {
+                min_total_energy = distTo[x][height()-1];
+                min_array = edgeTo[x];
+            }
         }
 
-        System.out.println("DEBUG: Final distance - " + distTo[height()-1]);
+        System.out.println("DEBUG: Final distance - " + min_total_energy);
         System.out.println("DEBUG: Edges - ");
-        for (int i = 0; i < edgeTo.length; i++) {
-            System.out.println("Edge[" + i + "] - " + edgeTo[i]);
+        for (int i = 0; i < min_array.length; i++) {
+            System.out.println("Edge[" + i + "] - " + min_array[i]);
         }
-    }
 
+        return min_array;
+    }
 
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
+
         if (seam == null || seam.length > picture.width() || picture.height() <= 1)
             throw new IllegalArgumentException();
+
+        Picture modified_picture = new Picture(width(), height());
+
+
     }
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
+
         if (seam == null || seam.length > picture.height() || picture.width() <= 1)
             throw new IllegalArgumentException();
+
+        Picture mod_pic = new Picture(width()-1, height());
+        int seam_index = 0;
+
+        for (int y = 0; y < height(); y++) {
+            int mod_pic_index = 0;
+            for (int x = 0; x < width(); x++) {
+                if (x == seam[seam_index]) {
+                    System.out.println("DEBUG: Removing " + seam[seam_index]);
+                    continue;
+                }
+                mod_pic.set(mod_pic_index++, y, picture.get(x, y));
+                System.out.println("DEBUG: For col - " + mod_pic_index + ", row - " + y);
+                System.out.println("DEBUG: Energy - " + energy(mod_pic_index, y));
+            }
+            seam_index++;
+        }
+        picture = mod_pic;
     }
 
     //  unit testing (optional)
@@ -179,7 +239,19 @@ public class SeamCarver {
         }
         System.out.println();
 
-        seamCarver.verticalSeamHelper(3);
+        int[] seam = seamCarver.findVerticalSeam();
+        seamCarver.removeVerticalSeam(seam);
+
+        System.out.println("DEBUG: Energy matrix after removing");
+        for (int i = 0; i < seamCarver.height(); i++) {
+            for (int j = 0; j < seamCarver.width(); j++) {
+                System.out.print(Math.round(seamCarver.energy(j, i)) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+
+        //seamCarver.findHorizontalSeam();
     }
 
     private static Picture getPictureWxH(int width, int height) {
