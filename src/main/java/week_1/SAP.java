@@ -20,7 +20,63 @@ public class SAP {
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
 
-        
+        Set<Integer> vSet = new HashSet<Integer>();
+        Set<Integer> wSet = new HashSet<Integer>();
+
+        Queue<Integer> vQueue = new Queue<Integer>();
+        Queue<Integer> wQueue = new Queue<Integer>();
+
+        vQueue.enqueue(v);
+        wQueue.enqueue(w);
+
+        boolean[] vIsVisited = new boolean[dg.V()];
+        boolean[] wIsVisited = new boolean[dg.V()];
+
+        int[] vEdgeTo = new int[dg.V()];
+        int[] wEdgeTo = new int[dg.V()];
+
+        int[] vDistTo = new int[dg.V()];
+        int[] wDistTo = new int[dg.V()];
+
+        while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
+
+            int vCurr = vQueue.dequeue();
+            int wCurr = wQueue.dequeue();
+
+            int vDist = vDistTo[vCurr];
+            int wDist = wDistTo[wCurr];
+
+            if (vSet.contains(wCurr)) {
+                return vDistTo[wCurr] + wDistTo[wCurr];
+            } else if (wSet.contains(vCurr)) {
+                return vDistTo[wCurr] + wDistTo[wCurr];
+            }
+
+            for (int adj: dg.adj(vCurr)) {
+                if (!vIsVisited[adj]) {
+                    vSet.add(adj);
+                    vQueue.enqueue(adj);
+                    vIsVisited[adj] = true;
+                    int adjDist = vDistTo[adj] + vDist;
+                    if (vDistTo[adj] < vDist + 1) {
+                        vDistTo[adj] = vDist + 1;
+                        vEdgeTo[adj] = vCurr;
+                    }
+                }
+            }
+
+            for (int adj: dg.adj(wCurr)) {
+                if (!wIsVisited[adj]) {
+                    wSet.add(adj);
+                    wQueue.enqueue(adj);
+                    wIsVisited[adj] = true;
+                    if (wDistTo[adj] < wDist + 1) {
+                        wDistTo[adj] = wDist + 1;
+                        wEdgeTo[adj] = wCurr;
+                    }
+                }
+            }
+        }
 
         return -1;
     }
