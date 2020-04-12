@@ -1,6 +1,10 @@
 package week_2;
 
+import edu.princeton.cs.algs4.IndexMinPQ;
 import edu.princeton.cs.algs4.Picture;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Monali L on 2/29/2020
@@ -93,6 +97,8 @@ public class SeamCarver {
     }
 
     // sequence of indices for vertical seam
+    // Performance requirements: O(N) = width x length
+
     public int[] findVerticalSeam() {
 
         double[][] distTo = new double[width()][height()];
@@ -123,6 +129,75 @@ public class SeamCarver {
             }
         }
         return minArray;
+    }
+
+    public int[] findVerticalSeam_helper(int s) {
+
+        double[][] distTo = new double[height()][width()];
+        int[][] edgeTo = new int[height()][width()];
+        boolean[][] visited = new boolean[height()][width()];
+        //int[] minArray = new int[height()];
+        IndexMinPQ<Double> pq = new IndexMinPQ<Double>(width()*height());
+
+        Map<Integer, int[]> indexMap = new HashMap<Integer, int[]>();
+        for (int i = 0; i < height(); i++) {
+            for (int j = 0; j < width(); j++) {
+                indexMap.put(getIndex(i, j), new int[]{i, j}); // col, row
+                distTo[i][j] = Double.POSITIVE_INFINITY;
+            }
+        }
+        for (int i = 0; i < width(); i++) {
+            distTo[0][i] = BORDER_ENERGY;
+        }
+        pq.insert(getIndex(s, 0), distTo[0][s]);
+
+        while (!pq.isEmpty()) {
+            int current = pq.delMin();
+            int[] arr = indexMap.get(current);
+            int x = arr[0]; // col
+            int y = arr[1]; // row
+            if (y >= height()-1) break;
+            // because everything here is width x height (cols x rows)
+            for (int i = -1; i <= 1; i++) {
+                if (x + i <= -1 || x + i >= width()) continue;
+                int adjIndex = getIndex(x+i, y+1);
+                double dist = energy(x + i, y + 1) + distTo[y][x];
+                if (distTo[y+1][x+i] > dist) {
+                    distTo[y+1][x+i] = dist;
+                    edgeTo[y+1][x+i] = current;
+                    visited[y+1][x+i] = true;
+                    if (pq.contains(current)) {
+                        pq.decreaseKey(adjIndex, distTo[y+1][x+i]);
+                    } else {
+                        pq.insert(adjIndex, distTo[y+1][x+i]);
+                    }
+                }
+            }
+        }
+
+        System.out.println("DistTo");
+        for (int i = 0; i < height(); i++) {
+            for (int j = 0; j < width(); j++) {
+                System.out.print(Math.round(distTo[i][j]) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+
+        System.out.println("EdgeTo");
+        for (int i = 0; i < height(); i++) {
+            for (int j = 0; j < width(); j++) {
+                System.out.print(edgeTo[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+
+        return null;
+    }
+
+    public int getIndex(int width, int height) {
+        return height*width() + width;
     }
 
     // remove horizontal seam from current picture
