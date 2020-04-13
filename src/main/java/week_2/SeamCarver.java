@@ -68,31 +68,87 @@ public class SeamCarver {
 
         double[][] distTo = new double[height()][width()];
         int[][] edgeTo = new int[height()][width()];
-        double minTotalEnergy = Double.POSITIVE_INFINITY;
         int[] minArray = new int[width()];
+        IndexMinPQ<Double> pq = new IndexMinPQ<Double>(width()*height());
 
-        for (int y = 0; y < height(); y++) {
-            distTo[y][0] = BORDER_ENERGY;
-            edgeTo[y][0] = y;
-            int prevY = y;
-            for (int x = 0; x < width() - 1; x++) {
-                double minEnergy = Double.POSITIVE_INFINITY;
-                for (int i = -1; i <= 1; i++) {
-                    if (prevY + i * 1 <= -1 || prevY + i * 1 >= height()) continue;
-                    double this_energy = energy(x + 1, prevY + i * 1);
-                    if (this_energy < minEnergy) {
-                        distTo[y][x + 1] = distTo[y][x] + this_energy;
-                        edgeTo[y][x + 1] = prevY + i * 1;
-                        minEnergy = this_energy;
+        Map<Integer, int[]> indexMap = new HashMap<Integer, int[]>();
+        for (int i = 0; i < height(); i++) { // rows
+            for (int j = 0; j < width(); j++) { // columns
+                indexMap.put(getIndex(j, i), new int[]{i, j});
+                distTo[i][j] = Double.POSITIVE_INFINITY;
+            }
+            distTo[i][0] = BORDER_ENERGY;
+            pq.insert(getIndex(0, i), BORDER_ENERGY);
+        }
+
+        while (!pq.isEmpty()) {
+
+            int current = pq.delMin();
+            int[] arr = indexMap.get(current);
+            int y = arr[0]; // col
+            int x = arr[1]; // row
+
+            if (x >= width()-1) break;
+
+            for (int i = -1; i <= 1; i++) {
+
+                if (y + i <= -1 || y + i >= height()) continue;
+                int adjIndex = getIndex(x + 1, y + i);
+                double dist = energy(x + 1, y + i) + distTo[y][x];
+
+                if (distTo[y+i][x+1] > dist) {
+                    distTo[y+i][x+1] = dist;
+                    edgeTo[y+i][x+1] = current;
+
+                    if (pq.contains(current)) {
+                        pq.decreaseKey(adjIndex, distTo[y+i][x+1]);
+                    } else {
+                        pq.insert(adjIndex, distTo[y+i][x+1]);
                     }
                 }
-                prevY = edgeTo[y][x + 1];
-            }
-            if (distTo[y][width() - 1] < minTotalEnergy) {
-                minTotalEnergy = distTo[y][width() - 1];
-                minArray = edgeTo[y];
             }
         }
+
+        System.out.println("DistTo");
+        for (int i = 0; i < height(); i++) {
+            for (int j = 0; j < width(); j++) {
+                System.out.print(Math.round(distTo[i][j]) + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+
+        System.out.println("EdgeTo");
+        for (int i = 0; i < height(); i++) {
+            for (int j = 0; j < width(); j++) {
+                System.out.print(edgeTo[i][j] + " ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+
+        // Get min array
+        double minEnergy = Double.POSITIVE_INFINITY;
+        int minIndex = -1;
+        for (int i = 0; i < height(); i++) {
+            if (distTo[i][width()-1] < minEnergy) {
+                minEnergy = distTo[i][width()-1];
+                minIndex = edgeTo[i][width()-1];
+            }
+        }
+
+        for (int i = height()-1; i > -1; i--) {
+            int[] arr = indexMap.get(minIndex);
+            int y = arr[0]; // col
+            int x = arr[1]; // row
+            minArray[i] = y;
+            minIndex = edgeTo[y][i];
+        }
+
+        for (int i = 0; i < minArray.length; i++) {
+            System.out.println("DEBUG: MinArray " + i + " - " + minArray[i] + ", Index - " + edgeTo[minArray[i]][i] + ", Dist - " + distTo[minArray[i]][i]);
+        }
+
         return minArray;
     }
 
@@ -101,61 +157,28 @@ public class SeamCarver {
 
     public int[] findVerticalSeam() {
 
-        double[][] distTo = new double[width()][height()];
-        int[][] edgeTo = new int[width()][height()];
-        double minTotalEnergy = Double.POSITIVE_INFINITY;
-        int[] minArray = new int[height()];
-
-        for (int x = 0; x < width(); x++) {
-            distTo[x][0] = BORDER_ENERGY;
-            edgeTo[x][0] = x;
-            int prevX = x;
-            for (int y = 0; y < height()-1; y++) {
-                double minEnergy = Double.POSITIVE_INFINITY;
-                for (int i = -1; i <= 1; i++) {
-                    if (prevX + i*1 <= -1 || prevX + i*1 >= width()) continue;
-                    double this_energy = energy(prevX + i*1, y+1);
-                    if (this_energy < minEnergy) {
-                        distTo[x][y+1] = distTo[x][y] + this_energy;
-                        edgeTo[x][y+1] = prevX + i*1;
-                        minEnergy = this_energy;
-                    }
-                }
-                prevX = edgeTo[x][y+1];
-            }
-            if (distTo[x][height()-1] < minTotalEnergy) {
-                minTotalEnergy = distTo[x][height()-1];
-                minArray = edgeTo[x];
-            }
-        }
-        return minArray;
-    }
-
-    public int[] findVerticalSeam_helper(int s) {
-
         double[][] distTo = new double[height()][width()];
         int[][] edgeTo = new int[height()][width()];
-        boolean[][] visited = new boolean[height()][width()];
-        //int[] minArray = new int[height()];
+        int[] minArray = new int[height()];
         IndexMinPQ<Double> pq = new IndexMinPQ<Double>(width()*height());
 
         Map<Integer, int[]> indexMap = new HashMap<Integer, int[]>();
         for (int i = 0; i < height(); i++) {
             for (int j = 0; j < width(); j++) {
-                indexMap.put(getIndex(i, j), new int[]{i, j}); // col, row
+                indexMap.put(getIndex(j, i), new int[]{i, j}); // col, row
                 distTo[i][j] = Double.POSITIVE_INFINITY;
             }
         }
         for (int i = 0; i < width(); i++) {
             distTo[0][i] = BORDER_ENERGY;
+            pq.insert(getIndex(i, 0), distTo[0][i]);
         }
-        pq.insert(getIndex(s, 0), distTo[0][s]);
 
         while (!pq.isEmpty()) {
             int current = pq.delMin();
             int[] arr = indexMap.get(current);
-            int x = arr[0]; // col
-            int y = arr[1]; // row
+            int y = arr[0]; // col
+            int x = arr[1]; // row
             if (y >= height()-1) break;
             // because everything here is width x height (cols x rows)
             for (int i = -1; i <= 1; i++) {
@@ -165,7 +188,6 @@ public class SeamCarver {
                 if (distTo[y+1][x+i] > dist) {
                     distTo[y+1][x+i] = dist;
                     edgeTo[y+1][x+i] = current;
-                    visited[y+1][x+i] = true;
                     if (pq.contains(current)) {
                         pq.decreaseKey(adjIndex, distTo[y+1][x+i]);
                     } else {
@@ -193,7 +215,29 @@ public class SeamCarver {
         }
         System.out.println();
 
-        return null;
+        // Get min array
+        double minEnergy = Double.POSITIVE_INFINITY;
+        int minIndex = -1;
+        for (int i = 0; i < width(); i++) {
+            if (distTo[height()-1][i] < minEnergy) {
+                minEnergy = distTo[height()-1][i];
+                minIndex = edgeTo[height()-1][i];
+            }
+        }
+
+        for (int i = height()-1; i > -1; i--) {
+            int[] arr = indexMap.get(minIndex);
+            int y = arr[0]; // col
+            int x = arr[1]; // row
+            minArray[i] = x;
+            minIndex = edgeTo[i][x];
+        }
+
+        for (int i = 0; i < minArray.length; i++) {
+            System.out.println("DEBUG: MinArray " + i + " - " + minArray[i] + ", Index - " + edgeTo[i][minArray[i]] + ", Dist - " + distTo[i][minArray[i]]);
+        }
+
+        return minArray;
     }
 
     public int getIndex(int width, int height) {
