@@ -32,52 +32,52 @@ public class SAP {
         boolean[] vIsVisited = new boolean[dg.V()];
         boolean[] wIsVisited = new boolean[dg.V()];
 
-        int[] vEdgeTo = new int[dg.V()];
-        int[] wEdgeTo = new int[dg.V()];
-
         int[] vDistTo = new int[dg.V()];
         int[] wDistTo = new int[dg.V()];
 
         while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
 
-            int vCurr = vQueue.dequeue();
-            int wCurr = wQueue.dequeue();
-
-            int vDist = vDistTo[vCurr];
-            int wDist = wDistTo[wCurr];
+            int vCurr = -1, wCurr = -1, vDist = 0, wDist = 0;
+            if (!vQueue.isEmpty()) {
+                vCurr = vQueue.dequeue();
+                vDist = vDistTo[vCurr];
+            }
+            if (!wQueue.isEmpty()) {
+                wCurr = wQueue.dequeue();
+                wDist = wDistTo[wCurr];
+            }
 
             if (vSet.contains(wCurr)) {
                 return vDistTo[wCurr] + wDistTo[wCurr];
             } else if (wSet.contains(vCurr)) {
-                return vDistTo[wCurr] + wDistTo[wCurr];
+                return vDistTo[vCurr] + wDistTo[vCurr];
             }
 
-            for (int adj: dg.adj(vCurr)) {
-                if (!vIsVisited[adj]) {
-                    vSet.add(adj);
-                    vQueue.enqueue(adj);
-                    vIsVisited[adj] = true;
-                    int adjDist = vDistTo[adj] + vDist;
-                    if (vDistTo[adj] < vDist + 1) {
-                        vDistTo[adj] = vDist + 1;
-                        vEdgeTo[adj] = vCurr;
+            if (vCurr != -1) {
+                for (int adj: dg.adj(vCurr)) {
+                    if (!vIsVisited[adj]) {
+                        vSet.add(adj);
+                        vQueue.enqueue(adj);
+                        vIsVisited[adj] = true;
+                        if (vDistTo[adj] < vDist + 1) {
+                            vDistTo[adj] = vDist + 1;
+                        }
                     }
                 }
             }
-
-            for (int adj: dg.adj(wCurr)) {
-                if (!wIsVisited[adj]) {
-                    wSet.add(adj);
-                    wQueue.enqueue(adj);
-                    wIsVisited[adj] = true;
-                    if (wDistTo[adj] < wDist + 1) {
-                        wDistTo[adj] = wDist + 1;
-                        wEdgeTo[adj] = wCurr;
+            if (wCurr != -1) {
+                for (int adj: dg.adj(wCurr)) {
+                    if (!wIsVisited[adj]) {
+                        wSet.add(adj);
+                        wQueue.enqueue(adj);
+                        wIsVisited[adj] = true;
+                        if (wDistTo[adj] < wDist + 1) {
+                            wDistTo[adj] = wDist + 1;
+                        }
                     }
                 }
             }
         }
-
         return -1;
     }
 
@@ -98,8 +98,8 @@ public class SAP {
 
         while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
 
-            int vCurr = vQueue.dequeue();
-            int wCurr = wQueue.dequeue();
+            int vCurr = vQueue.isEmpty() ? -1 : vQueue.dequeue();
+            int wCurr = wQueue.isEmpty() ? -1 : wQueue.dequeue();
 
             if (vSet.contains(wCurr)) {
                 return wCurr;
@@ -107,19 +107,22 @@ public class SAP {
                 return vCurr;
             }
 
-            for (int adj: dg.adj(vCurr)) {
-                if (!vIsVisited[adj]) {
-                    vSet.add(adj);
-                    vQueue.enqueue(adj);
-                    vIsVisited[adj] = true;
+            if (vCurr != -1) {
+                for (int adj: dg.adj(vCurr)) {
+                    if (!vIsVisited[adj]) {
+                        vSet.add(adj);
+                        vQueue.enqueue(adj);
+                        vIsVisited[adj] = true;
+                    }
                 }
             }
-
-            for (int adj: dg.adj(wCurr)) {
-                if (!wIsVisited[adj]) {
-                    wSet.add(adj);
-                    wQueue.enqueue(adj);
-                    wIsVisited[adj] = true;
+            if (wCurr != -1) {
+                for (int adj: dg.adj(wCurr)) {
+                    if (!wIsVisited[adj]) {
+                        wSet.add(adj);
+                        wQueue.enqueue(adj);
+                        wIsVisited[adj] = true;
+                    }
                 }
             }
         }
@@ -129,6 +132,64 @@ public class SAP {
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
 
+        Set<Integer> vSet = new HashSet<Integer>();
+        Set<Integer> wSet = new HashSet<Integer>();
+
+        Queue<Integer> vQueue = new Queue<Integer>();
+        Queue<Integer> wQueue = new Queue<Integer>();
+
+        for (int i: v) vQueue.enqueue(i);
+        for (int i: w) wQueue.enqueue(i);
+
+        boolean[] vIsVisited = new boolean[dg.V()];
+        boolean[] wIsVisited = new boolean[dg.V()];
+
+        int[] vDistTo = new int[dg.V()];
+        int[] wDistTo = new int[dg.V()];
+
+        while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
+
+            int vCurr = -1, wCurr = -1, vDist = 0, wDist = 0;
+            if (!vQueue.isEmpty()) {
+                vCurr = vQueue.dequeue();
+                vDist = vDistTo[vCurr];
+            }
+            if (!wQueue.isEmpty()) {
+                wCurr = wQueue.dequeue();
+                wDist = wDistTo[wCurr];
+            }
+
+            if (vSet.contains(wCurr)) {
+                return vDistTo[wCurr] + wDistTo[wCurr];
+            } else if (wSet.contains(vCurr)) {
+                return vDistTo[vCurr] + wDistTo[vCurr];
+            }
+
+            if (vCurr != -1) {
+                for (int adj: dg.adj(vCurr)) {
+                    if (!vIsVisited[adj]) {
+                        vSet.add(adj);
+                        vQueue.enqueue(adj);
+                        vIsVisited[adj] = true;
+                        if (vDistTo[adj] < vDist + 1) {
+                            vDistTo[adj] = vDist + 1;
+                        }
+                    }
+                }
+            }
+            if (wCurr != -1) {
+                for (int adj: dg.adj(wCurr)) {
+                    if (!wIsVisited[adj]) {
+                        wSet.add(adj);
+                        wQueue.enqueue(adj);
+                        wIsVisited[adj] = true;
+                        if (wDistTo[adj] < wDist + 1) {
+                            wDistTo[adj] = wDist + 1;
+                        }
+                    }
+                }
+            }
+        }
         return -1;
     }
 
@@ -153,33 +214,31 @@ public class SAP {
 
         while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
 
-            int vCurr = vQueue.dequeue();
-            int wCurr = wQueue.dequeue();
-
-            //System.out.println("DEBUG: v - " + vCurr);
-            //System.out.println("DEBUG: w - " + wCurr);
+            int vCurr = vQueue.isEmpty() ? -1 : vQueue.dequeue();
+            int wCurr = wQueue.isEmpty() ? -1 : wQueue.dequeue();
 
             if (vSet.contains(wCurr)) {
-                //System.out.println("DEBUG: Found matching for w in v, wCurr - " + wCurr);
                 return wCurr;
             } else if (wSet.contains(vCurr)) {
-                //System.out.println("DEBUG: Found matching v in w, vCurr - " + vCurr);
                 return vCurr;
             }
 
-            for (int adj: dg.adj(vCurr)) {
-                if (!vIsVisited[adj]) {
-                    vSet.add(adj);
-                    vQueue.enqueue(adj);
-                    vIsVisited[adj] = true;
+            if (vCurr != -1) {
+                for (int adj: dg.adj(vCurr)) {
+                    if (!vIsVisited[adj]) {
+                        vSet.add(adj);
+                        vQueue.enqueue(adj);
+                        vIsVisited[adj] = true;
+                    }
                 }
             }
-
-            for (int adj: dg.adj(wCurr)) {
-                if (!wIsVisited[adj]) {
-                    wSet.add(adj);
-                    wQueue.enqueue(adj);
-                    wIsVisited[adj] = true;
+            if (wCurr != -1) {
+                for (int adj: dg.adj(wCurr)) {
+                    if (!wIsVisited[adj]) {
+                        wSet.add(adj);
+                        wQueue.enqueue(adj);
+                        wIsVisited[adj] = true;
+                    }
                 }
             }
         }
