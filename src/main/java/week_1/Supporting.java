@@ -97,32 +97,41 @@ public class Supporting {
         Set<Integer> vSet = new HashSet<Integer>();
         Set<Integer> wSet = new HashSet<Integer>();
 
-        while (!vQueue.isEmpty()) {
-            int vCurr = vQueue.dequeue();
-            vSet.add(vCurr);
-            for (int n: dg.adj(vCurr)) {
-                if (!vBfsMarked[n]) {
-                    if (vDistTo[n] > (vDistTo[vCurr] + 1)) {
-                        vDistTo[n] = vDistTo[vCurr] + 1;
-                        vEdgeTo[n] = vCurr;
+        while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
+            if (!vQueue.isEmpty()) {
+                int vCurr = vQueue.dequeue();
+                vSet.add(vCurr);
+                if (vSet.contains(w)) {
+                    System.out.printf("Common ancestor of %d and %d: %d, Path Length: %d\n", v, w, v, vDistTo[w]);
+                    return;
+                }
+                for (int n: dg.adj(vCurr)) {
+                    if (!vBfsMarked[n]) {
+                        if (vDistTo[n] > (vDistTo[vCurr] + 1)) {
+                            vDistTo[n] = vDistTo[vCurr] + 1;
+                            vEdgeTo[n] = vCurr;
+                        }
+                        vQueue.enqueue(n);
+                        vBfsMarked[n] = true;
                     }
-                    vQueue.enqueue(n);
-                    vBfsMarked[n] = true;
                 }
             }
-        }
-
-        while (!wQueue.isEmpty()) {
-            int wCurr = wQueue.dequeue();
-            wSet.add(wCurr);
-            for (int n: dg.adj(wCurr)) {
-                if (!wBfsMarked[n]) {
-                    if (wDistTo[n] > (wDistTo[wCurr] + 1)) {
-                        wDistTo[n] = wDistTo[wCurr] + 1;
-                        wEdgeTo[n] = wCurr;
+            if (!wQueue.isEmpty()) {
+                int wCurr = wQueue.dequeue();
+                wSet.add(wCurr);
+                if (wSet.contains(v)) {
+                    System.out.printf("Common ancestor of %d and %d: %d, Path Length: %d\n", v, w, w, wDistTo[v]);
+                    return;
+                }
+                for (int n: dg.adj(wCurr)) {
+                    if (!wBfsMarked[n]) {
+                        if (wDistTo[n] > (wDistTo[wCurr] + 1)) {
+                            wDistTo[n] = wDistTo[wCurr] + 1;
+                            wEdgeTo[n] = wCurr;
+                        }
+                        wQueue.enqueue(n);
+                        wBfsMarked[n] = true;
                     }
-                    wQueue.enqueue(n);
-                    wBfsMarked[n] = true;
                 }
             }
         }
@@ -142,13 +151,13 @@ public class Supporting {
             System.out.println();
         }
 
-        if (vSet.contains(w)) {
+        /*if (vSet.contains(w)) {
             System.out.printf("Common ancestor of %d and %d: %d, Path Length: %d\n", v, w, v, vDistTo[w]);
             return;
         } else if (wSet.contains(v)) {
             System.out.printf("Common ancestor of %d and %d: %d, Path Length: %d\n", v, w, w, wDistTo[v]);
             return;
-        }
+        }*/
 
         System.out.println("Not found in either sets so finding common");
         Set<Integer> common = new HashSet<Integer>(vSet);
@@ -172,13 +181,13 @@ public class Supporting {
 
     public static void main(String[] args) {
 
-        Digraph digraph = getGraphFromFile("C:/Users/monal/IdeaProjects/Coursera/src/main/resources/week_1/digraph25.txt");
+        Digraph digraph = getGraphFromFile("C:/Users/monal/IdeaProjects/Coursera/src/main/resources/week_1/digraph2.txt");
                 //getFilledGraph();
         Supporting object = new Supporting(digraph);
-        object.breadthFirstSearch(digraph, 13);
-        object.breadthFirstSearch(digraph, 16);
+        object.breadthFirstSearch(digraph, 1);
+        object.breadthFirstSearch(digraph, 3);
 
-        object.reachability(digraph, 13, 16);
+        object.reachability(digraph, 1, 3);
     }
 
     // First line has vertex count

@@ -59,6 +59,18 @@ public class WordNet {
 
         DirectedCycle directedCycle = new DirectedCycle(dg);
         if (directedCycle.hasCycle()) throw new IllegalArgumentException();
+        if (!isRootedDag()) throw new IllegalArgumentException();
+    }
+
+    private boolean isRootedDag() {
+        boolean flag = false;
+        for (int id: idMap.keySet()) {
+            if (dg.outdegree(id) == 0) {
+                if (flag) return false;
+                flag = true;
+            }
+        }
+        return true;
     }
 
     // returns all WordNet nouns

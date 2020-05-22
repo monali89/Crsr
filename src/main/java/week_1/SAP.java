@@ -9,173 +9,144 @@ import edu.princeton.cs.algs4.StdOut;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author Monali L on 2/8/2020
  */
+
 public class SAP {
 
     private final Digraph dg;
+    private int ancestor;
+    private int pathMinDist;
 
     // constructor takes a digraph (not necessarily a DAG)
     public SAP(Digraph G) {
         this.dg = G;
+        ancestor = -1;
+        pathMinDist = -1;
     }
 
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
-        if (v < 0 || w < 0 || v >= dg.V() || w >= dg.V()) throw  new IllegalArgumentException();
-        return helperLength(Collections.singletonList(v), Collections.singletonList(w));
+        bfs(Collections.singletonList(v), Collections.singletonList(w));
+        return pathMinDist;
     }
 
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
     public int ancestor(int v, int w) {
-        if (v < 0 || w < 0 || v >= dg.V() || w >= dg.V()) throw  new IllegalArgumentException();
-        return helperAncestor(Collections.singletonList(v), Collections.singletonList(w));
+        bfs(Collections.singletonList(v), Collections.singletonList(w));
+        return ancestor;
     }
 
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
-
-        if (v == null || w == null) throw new IllegalArgumentException();
-        for (int vThis: v) if (vThis < 0 || vThis >= dg.V()) throw new IllegalArgumentException();
-        for (int wThis: w) if (wThis < 0 || wThis >= dg.V()) throw new IllegalArgumentException();
-
-        return helperLength(v, w);
+        bfs(v, w);
+        return pathMinDist;
     }
 
     // a common ancestor that participates in shortest ancestral path; -1 if no such path
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
-
-        if (v == null || w == null) throw new IllegalArgumentException();
-        for (int vThis: v) if (vThis < 0 || vThis >= dg.V()) throw new IllegalArgumentException();
-        for (int wThis: w) if (wThis < 0 || wThis >= dg.V()) throw new IllegalArgumentException();
-
-        return helperAncestor(v, w);
-
+        bfs(v, w);
+        return ancestor;
     }
 
-    private int helperLength(Iterable<Integer> v, Iterable<Integer> w) {
+    private void bfs(Iterable<Integer> v, Iterable<Integer> w) {
 
-        Set<Integer> vSet = new HashSet<Integer>();
-        Set<Integer> wSet = new HashSet<Integer>();
+        ancestor = -1;
+        pathMinDist = -1;
 
         Queue<Integer> vQueue = new Queue<Integer>();
         Queue<Integer> wQueue = new Queue<Integer>();
 
-        for (int i: v) {
-            vQueue.enqueue(i);
-            vSet.add(i);
-        }
-        for (int i: w) {
-            wQueue.enqueue(i);
-            wSet.add(i);
-        }
-
-        boolean[] vIsVisited = new boolean[dg.V()];
-        boolean[] wIsVisited = new boolean[dg.V()];
+        boolean[] vBfsMarked = new boolean[dg.V()];
+        boolean[] wBfsMarked = new boolean[dg.V()];
 
         int[] vDistTo = new int[dg.V()];
+        // int[] vEdgeTo = new int[dg.V()];
         int[] wDistTo = new int[dg.V()];
+        // int[] wEdgeTo = new int[dg.V()];
 
-        while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
-
-            int vCurr = -1, wCurr = -1, vDist = 0, wDist = 0;
-            if (!vQueue.isEmpty()) {
-                vCurr = vQueue.dequeue();
-                vDist = vDistTo[vCurr];
-            }
-            if (!wQueue.isEmpty()) {
-                wCurr = wQueue.dequeue();
-                wDist = wDistTo[wCurr];
-            }
-
-            if (vSet.contains(wCurr)) {
-                return vDistTo[wCurr] + wDistTo[wCurr];
-            } else if (wSet.contains(vCurr)) {
-                return vDistTo[vCurr] + wDistTo[vCurr];
-            }
-
-            if (vCurr != -1) {
-                for (int adj: dg.adj(vCurr)) {
-                    if (!vIsVisited[adj]) {
-                        vSet.add(adj);
-                        vQueue.enqueue(adj);
-                        vIsVisited[adj] = true;
-                        if (vDistTo[adj] < vDist + 1) {
-                            vDistTo[adj] = vDist + 1;
-                        }
-                    }
-                }
-            }
-            if (wCurr != -1) {
-                for (int adj: dg.adj(wCurr)) {
-                    if (!wIsVisited[adj]) {
-                        wSet.add(adj);
-                        wQueue.enqueue(adj);
-                        wIsVisited[adj] = true;
-                        if (wDistTo[adj] < wDist + 1) {
-                            wDistTo[adj] = wDist + 1;
-                        }
-                    }
-                }
-            }
+        for (int i = 0; i < dg.V(); i++) {
+            vDistTo[i] = Integer.MAX_VALUE;
+            wDistTo[i] = Integer.MAX_VALUE;
+            // vEdgeTo[i] = -1;
+            // wEdgeTo[i] = -1;
         }
-        return -1;
-    }
 
-    private int helperAncestor(Iterable<Integer> v, Iterable<Integer> w) {
+        for (int i: v) {
+            vQueue.enqueue(i);
+            vDistTo[i] = 0;
+        }
+        for (int i: w) {
+            wQueue.enqueue(i);
+            wDistTo[i] = 0;
+        }
 
         Set<Integer> vSet = new HashSet<Integer>();
         Set<Integer> wSet = new HashSet<Integer>();
 
-        Queue<Integer> vQueue = new Queue<Integer>();
-        Queue<Integer> wQueue = new Queue<Integer>();
-
-        for (int i: v) {
-            vQueue.enqueue(i);
-            vSet.add(i);
-        }
-        for (int i: w) {
-            wQueue.enqueue(i);
-            wSet.add(i);
-        }
-
-        boolean[] vIsVisited = new boolean[dg.V()];
-        boolean[] wIsVisited = new boolean[dg.V()];
-
         while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
-
-            int vCurr = vQueue.isEmpty() ? -1 : vQueue.dequeue();
-            int wCurr = wQueue.isEmpty() ? -1 : wQueue.dequeue();
-
-            if (vSet.contains(wCurr)) {
-                return wCurr;
-            } else if (wSet.contains(vCurr)) {
-                return vCurr;
-            }
-
-            if (vCurr != -1) {
-                for (int adj: dg.adj(vCurr)) {
-                    if (!vIsVisited[adj]) {
-                        vSet.add(adj);
-                        vQueue.enqueue(adj);
-                        vIsVisited[adj] = true;
+            if (!vQueue.isEmpty()) {
+                int vCurr = vQueue.dequeue();
+                vSet.add(vCurr);
+                for (int i: w) {
+                    if (vSet.contains(i)) {
+                        ancestor = i;
+                        pathMinDist = vDistTo[i];
+                        return;
+                    }
+                }
+                for (int n: dg.adj(vCurr)) {
+                    if (!vBfsMarked[n]) {
+                        if (vDistTo[n] > (vDistTo[vCurr] + 1)) {
+                            vDistTo[n] = vDistTo[vCurr] + 1;
+                            // vEdgeTo[n] = vCurr;
+                        }
+                        vQueue.enqueue(n);
+                        vBfsMarked[n] = true;
                     }
                 }
             }
-            if (wCurr != -1) {
-                for (int adj: dg.adj(wCurr)) {
-                    if (!wIsVisited[adj]) {
-                        wSet.add(adj);
-                        wQueue.enqueue(adj);
-                        wIsVisited[adj] = true;
+            if (!wQueue.isEmpty()) {
+                int wCurr = wQueue.dequeue();
+                wSet.add(wCurr);
+                for (int i: v) {
+                    if (wSet.contains(i)) {
+                        ancestor = i;
+                        pathMinDist = wDistTo[i];
+                        return;
+                    }
+                }
+                for (int n: dg.adj(wCurr)) {
+                    if (!wBfsMarked[n]) {
+                        if (wDistTo[n] > (wDistTo[wCurr] + 1)) {
+                            wDistTo[n] = wDistTo[wCurr] + 1;
+                            // wEdgeTo[n] = wCurr;
+                        }
+                        wQueue.enqueue(n);
+                        wBfsMarked[n] = true;
                     }
                 }
             }
         }
-        return -1;
+
+        vSet.retainAll(wSet);
+        List<Integer> list = new ArrayList<Integer>(vSet);
+
+        int minDist = Integer.MAX_VALUE;
+        int thisAncestor = -1;
+
+        for (int l: list) {
+            if (minDist > (vDistTo[l] + wDistTo[l])) {
+                minDist = vDistTo[l] + wDistTo[l];
+                thisAncestor = l;
+            }
+        }
+        ancestor = thisAncestor;
+        pathMinDist = minDist;
     }
 
     // do unit testing of this class
