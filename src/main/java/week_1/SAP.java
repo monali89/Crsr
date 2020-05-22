@@ -55,6 +55,16 @@ public class SAP {
 
     private void bfs(Iterable<Integer> v, Iterable<Integer> w) {
 
+        if (v == null || w == null) throw new IllegalArgumentException();
+        for (Object vThis: v) {
+            if (vThis == null) throw  new IllegalArgumentException();
+            if ((Integer) vThis < 0 || (Integer) vThis >= dg.V()) throw new IllegalArgumentException();
+        }
+        for (Object wThis: w) {
+            if (wThis == null) throw  new IllegalArgumentException();
+            if ((Integer) wThis < 0 || (Integer) wThis >= dg.V()) throw new IllegalArgumentException();
+        }
+
         ancestor = -1;
         pathMinDist = -1;
 
@@ -65,8 +75,8 @@ public class SAP {
         boolean[] wBfsMarked = new boolean[dg.V()];
 
         int[] vDistTo = new int[dg.V()];
-        // int[] vEdgeTo = new int[dg.V()];
         int[] wDistTo = new int[dg.V()];
+        // int[] vEdgeTo = new int[dg.V()];
         // int[] wEdgeTo = new int[dg.V()];
 
         for (int i = 0; i < dg.V(); i++) {
@@ -88,17 +98,13 @@ public class SAP {
         Set<Integer> vSet = new HashSet<Integer>();
         Set<Integer> wSet = new HashSet<Integer>();
 
+        int minDist = Integer.MAX_VALUE;
+        int thisAncestor = -1;
+
         while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
             if (!vQueue.isEmpty()) {
                 int vCurr = vQueue.dequeue();
                 vSet.add(vCurr);
-                for (int i: w) {
-                    if (vSet.contains(i)) {
-                        ancestor = i;
-                        pathMinDist = vDistTo[i];
-                        return;
-                    }
-                }
                 for (int n: dg.adj(vCurr)) {
                     if (!vBfsMarked[n]) {
                         if (vDistTo[n] > (vDistTo[vCurr] + 1)) {
@@ -113,13 +119,6 @@ public class SAP {
             if (!wQueue.isEmpty()) {
                 int wCurr = wQueue.dequeue();
                 wSet.add(wCurr);
-                for (int i: v) {
-                    if (wSet.contains(i)) {
-                        ancestor = i;
-                        pathMinDist = wDistTo[i];
-                        return;
-                    }
-                }
                 for (int n: dg.adj(wCurr)) {
                     if (!wBfsMarked[n]) {
                         if (wDistTo[n] > (wDistTo[wCurr] + 1)) {
@@ -136,17 +135,14 @@ public class SAP {
         vSet.retainAll(wSet);
         List<Integer> list = new ArrayList<Integer>(vSet);
 
-        int minDist = Integer.MAX_VALUE;
-        int thisAncestor = -1;
-
-        for (int l: list) {
-            if (minDist > (vDistTo[l] + wDistTo[l])) {
-                minDist = vDistTo[l] + wDistTo[l];
-                thisAncestor = l;
+        for (int vertex: list) {
+            if (minDist > (vDistTo[vertex] + wDistTo[vertex])) {
+                minDist = vDistTo[vertex] + wDistTo[vertex];
+                thisAncestor = vertex;
             }
         }
         ancestor = thisAncestor;
-        pathMinDist = minDist;
+        pathMinDist = minDist == Integer.MAX_VALUE ? -1 : minDist;
     }
 
     // do unit testing of this class
@@ -162,5 +158,4 @@ public class SAP {
             StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
         }
     }
-
 }

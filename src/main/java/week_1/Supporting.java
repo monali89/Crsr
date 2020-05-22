@@ -6,10 +6,7 @@ import edu.princeton.cs.algs4.Queue;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Monali L on 3/18/2020
@@ -97,14 +94,17 @@ public class Supporting {
         Set<Integer> vSet = new HashSet<Integer>();
         Set<Integer> wSet = new HashSet<Integer>();
 
+        vSet.add(v);
+        wSet.add(w);
+
         while (!vQueue.isEmpty() || !wQueue.isEmpty()) {
             if (!vQueue.isEmpty()) {
                 int vCurr = vQueue.dequeue();
                 vSet.add(vCurr);
-                if (vSet.contains(w)) {
+                /*if (vSet.contains(w)) {
                     System.out.printf("Common ancestor of %d and %d: %d, Path Length: %d\n", v, w, v, vDistTo[w]);
                     return;
-                }
+                }*/
                 for (int n: dg.adj(vCurr)) {
                     if (!vBfsMarked[n]) {
                         if (vDistTo[n] > (vDistTo[vCurr] + 1)) {
@@ -119,10 +119,10 @@ public class Supporting {
             if (!wQueue.isEmpty()) {
                 int wCurr = wQueue.dequeue();
                 wSet.add(wCurr);
-                if (wSet.contains(v)) {
+                /*if (wSet.contains(v)) {
                     System.out.printf("Common ancestor of %d and %d: %d, Path Length: %d\n", v, w, w, wDistTo[v]);
                     return;
-                }
+                }*/
                 for (int n: dg.adj(wCurr)) {
                     if (!wBfsMarked[n]) {
                         if (wDistTo[n] > (wDistTo[wCurr] + 1)) {
@@ -151,43 +151,41 @@ public class Supporting {
             System.out.println();
         }
 
-        /*if (vSet.contains(w)) {
-            System.out.printf("Common ancestor of %d and %d: %d, Path Length: %d\n", v, w, v, vDistTo[w]);
-            return;
-        } else if (wSet.contains(v)) {
-            System.out.printf("Common ancestor of %d and %d: %d, Path Length: %d\n", v, w, w, wDistTo[v]);
-            return;
-        }*/
-
         System.out.println("Not found in either sets so finding common");
         Set<Integer> common = new HashSet<Integer>(vSet);
         common.retainAll(wSet);
         List<Integer> list = new ArrayList<Integer>(common);
         System.out.println("List: " + list);
 
-        int minDist = Integer.MAX_VALUE;
-        int ancestor = -1;
+        int minDist = Integer.MAX_VALUE; // Math.min(vDistTo[w], wDistTo[v]);
+        int ancestor = -1; // vDistTo[w] < wDistTo[v] ? v : w;
 
         for (int l: list) {
             if (minDist > (vDistTo[l] + wDistTo[l])) {
                 minDist = vDistTo[l] + wDistTo[l];
                 ancestor = l;
+                System.out.println("DEBUG: l - " + l + ", vDistTo - " + vDistTo[l] + ", wDistTo - " + wDistTo[l]);
             }
         }
 
-        System.out.printf("Common ancestor of %d and %d: %d, Path Length: %d\n", v, w, ancestor, minDist);
+        System.out.printf("Common ancestor of %d and %d: %d, Path Length: %d\n", v, w, ancestor, (minDist == Integer.MAX_VALUE ? -1 : minDist));
 
     }
 
     public static void main(String[] args) {
 
         Digraph digraph = getGraphFromFile("C:/Users/monal/IdeaProjects/Coursera/src/main/resources/week_1/digraph2.txt");
-                //getFilledGraph();
+
         Supporting object = new Supporting(digraph);
         object.breadthFirstSearch(digraph, 1);
         object.breadthFirstSearch(digraph, 3);
-
         object.reachability(digraph, 1, 3);
+
+        /*SAP sap = new SAP(digraph);
+        List<Integer> l1 = new ArrayList<Integer>(Arrays.<Integer>asList(2313, 12607, 15528, 19277, 24063, 30277, 38965, 41740, 50798, 58628, 65614));
+        List<Integer> l2 = new ArrayList<Integer>(Arrays.<Integer>asList(19787, 51894, 75591));
+        System.out.println("Ancestor: " + sap.ancestor(l1, l2));
+        System.out.println("Length: " + sap.length(l1, l2));*/
     }
 
     // First line has vertex count
@@ -204,9 +202,10 @@ public class Supporting {
 
             while ((s = br.readLine()) != null) {
                 if (s.trim().equals("")) continue;
-                String[] t = s.split(" ");
-                int v = Integer.parseInt(t[0]);
-                int w = Integer.parseInt(t[1]);
+                String[] t = s.trim().split("\\s+");
+                if (t.length <= 1) continue;
+                int v = Integer.parseInt(t[0].trim());
+                int w = Integer.parseInt(t[1].trim());
                 dg.addEdge(v, w);
             }
         } catch (IOException e) {
