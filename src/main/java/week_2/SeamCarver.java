@@ -8,21 +8,24 @@ import edu.princeton.cs.algs4.Picture;
 
 public class SeamCarver {
 
-    private static final double BORDER_ENERGY = 1000.0;
     private Picture picture;
-    private int[][] yx;
+    private int size;
+    private final double BORDER_ENERGY = 1000.0;
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
         if (picture == null) throw new IllegalArgumentException();
-        this.picture = new Picture(picture);
-        this.yx = new int[height()*width()][2];
+        this.picture = picture;
+    }
+
+    private int getIndex(int x, int y) { // Column x, row y
+        int index = y * picture.width() + x;
+        return index;
     }
 
     // current picture
     public Picture picture() {
-        Picture newPicture = new Picture(this.picture);
-        return newPicture;
+        return this.picture;
     }
 
     // width of current picture - columns
@@ -41,155 +44,141 @@ public class SeamCarver {
             throw new IllegalArgumentException();
 
         // Border coordinate
-        if (x == 0 || x == picture.width() - 1 || y == 0 || y == picture.height() - 1)
-            return BORDER_ENERGY;
+        if(x == 0 || x == picture.width() - 1 || y == 0 || y == picture.height() - 1)
+            return 1000.0;
 
         // X gradient
-        int xRed = picture.get(x+1, y).getRed() - picture.get(x-1, y).getRed();
-        int xBlue = picture.get(x+1, y).getBlue() - picture.get(x-1, y).getBlue();
-        int xGreen = picture.get(x+1, y).getGreen() - picture.get(x-1, y).getGreen();
-        int xSqr = xRed*xRed + xBlue*xBlue + xGreen*xGreen;
+        int x_red = picture.get(x+1, y).getRed() - picture.get(x-1, y).getRed();
+        int x_blue = picture.get(x+1, y).getBlue() - picture.get(x-1, y).getBlue();
+        int x_green = picture.get(x+1, y).getGreen() - picture.get(x-1, y).getGreen();
+        int x_sqr = x_red*x_red + x_blue*x_blue + x_green*x_green;
 
         // Y gradient
-        int yRed = picture.get(x, y+1).getRed() - picture.get(x, y-1).getRed();
-        int yBlue = picture.get(x, y+1).getBlue() - picture.get(x, y-1).getBlue();
-        int yGreen = picture.get(x, y+1).getGreen() - picture.get(x, y-1).getGreen();
-        int ySqr = yRed*yRed + yBlue*yBlue + yGreen*yGreen;
+        int y_red = picture.get(x, y+1).getRed() - picture.get(x, y-1).getRed();
+        int y_blue = picture.get(x, y+1).getBlue() - picture.get(x, y-1).getBlue();
+        int y_green = picture.get(x, y+1).getGreen() - picture.get(x, y-1).getGreen();
+        int y_sqr = y_red*y_red + y_blue*y_blue + y_green*y_green;
 
-        double energy = Math.sqrt(xSqr + ySqr);
+        double energy = Math.sqrt(x_sqr + y_sqr);
 
         return energy;
     }
 
-    // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
 
         double[][] distTo = new double[height()][width()];
         int[][] edgeTo = new int[height()][width()];
-        boolean[][] isVisited = new boolean[height()][width()];
-        int[] minArray = new int[width()];
-
         for (int i = 0; i < height(); i++) {
-            for (int j = 0; j < width(); j++) {
-                distTo[i][j] = j == 0 ? BORDER_ENERGY : Double.POSITIVE_INFINITY;
+            for (int j = 1; j < width(); j++) {
+                distTo[i][j] = Double.POSITIVE_INFINITY;
+                edgeTo[i][j] = -1;
             }
+            distTo[i][0] = BORDER_ENERGY;
+            edgeTo[i][0] = 0;
         }
 
-        for (int j = 0; j < height()*width(); j++) {
-
-            int current = getMinDistIndex(distTo, isVisited);
-            int y = yx[current][0]; // col
-            int x = yx[current][1]; // row
-            if (x >= width()-1) break;
-
-            isVisited[y][x] = true;
-
-            // because everything here is width x height (cols x rows)
-            for (int i = -1; i <= 1; i++) {
-                if (y + i <= -1 || y + i >= height()) continue;
-                double dist = energy(x + 1, y + i) + distTo[y][x];
-                if (!isVisited[y+i][x+1] && distTo[y+i][x+1] > dist) {
-                    distTo[y+i][x+1] = dist;
-                    edgeTo[y+i][x+1] = current;
+        for (int x = 0; x < width()-1; x++) {
+            for (int y = 0; y < height(); y++) {
+                for (int i = -1; i <= 1; i++) {
+                    if ((y + i) < 0 || (y + i) >= height()) continue;
+                    if (distTo[y+i][x+1] > (distTo[y][x] + energy(x+1, y+i))) {
+                        distTo[y+i][x+1] = distTo[y][x] + energy(x+1, y+i);
+                        edgeTo[y+i][x+1] = y;
+                    }
                 }
             }
         }
 
-        // Get min array
-        double minEnergy = Double.POSITIVE_INFINITY;
-        int minIndex = -1;
-        for (int i = 0; i < height(); i++) {
-            if (distTo[i][width()-1] < minEnergy) {
-                minEnergy = distTo[i][width()-1];
-                minIndex = getIndex(width()-1, i);
+        System.out.println("RESULT");
+        for (int y = 0; y < height(); y++) {
+            for (int x = 0; x < width(); x++) {
+                System.out.print(distTo[y][x] + " ");
+            }
+            System.out.println();
+        }
+
+        System.out.println("EDGE TO");
+        for (int y = 0; y < height(); y++) {
+            for (int x = 0; x < width(); x++) {
+                System.out.print(edgeTo[y][x] + " ");
+            }
+            System.out.println();
+        }
+
+        // Find min array
+        // get min y from last row
+        double minDist = distTo[0][width()-1];
+        int minY = 0;
+        for (int i = 1; i < height(); i++) {
+            if (minDist > distTo[i][width()-1]) {
+                minDist = distTo[i][width()-1];
+                minY = i;
             }
         }
 
-        for (int i = width()-1; i > -1; i--) {
-            int y = yx[minIndex][0]; // col
-            minArray[i] = y;
-            minIndex = edgeTo[y][i];
+        System.out.println("minY: " + minY + ", minDist: " + minDist);
+
+        // Get y for all rows
+        int[] minArray = new int[width()];
+        int thisMinY = minY;
+        minArray[width()-1] = minY;
+        for (int i = width()-2; i > -1; i--) {
+            minArray[i] = edgeTo[thisMinY][i+1];
+            thisMinY = minArray[i];
+        }
+
+        System.out.println("Min Array");
+        for (int i = 0; i < minArray.length; i++) {
+            System.out.println("i: " + i + ", value: " + minArray[i]);
         }
 
         return minArray;
     }
 
     // sequence of indices for vertical seam
-    // Performance requirements: O(N) = width x length
-
     public int[] findVerticalSeam() {
 
         double[][] distTo = new double[height()][width()];
         int[][] edgeTo = new int[height()][width()];
-        boolean[][] isVisited = new boolean[height()][width()];
-        int[] minArray = new int[height()];
-
         for (int i = 0; i < height(); i++) {
             for (int j = 0; j < width(); j++) {
                 distTo[i][j] = i == 0 ? BORDER_ENERGY : Double.POSITIVE_INFINITY;
+                edgeTo[i][j] = i == 0 ? i : -1;
             }
         }
 
-        for (int j = 0; j < height()*width(); j++) {
-
-            int current = getMinDistIndex(distTo, isVisited);
-            int y = yx[current][0]; // col
-            int x = yx[current][1]; // row
-            if (y >= height()-1) continue;
-
-            isVisited[y][x] = true;
-
-            // because everything here is width x height (cols x rows)
-            for (int i = -1; i <= 1; i++) {
-                if (x + i <= -1 || x + i >= width()) continue;
-                double dist = energy(x + i, y + 1) + distTo[y][x];
-                if (!isVisited[y+1][x+i] && distTo[y+1][x+i] > dist) {
-                    distTo[y+1][x+i] = dist;
-                    edgeTo[y+1][x+i] = current;
+        for (int y = 0; y < height()-1; y++) {
+            for (int x = 0; x < width(); x++) {
+                for (int i = -1; i <= 1; i++) {
+                    if ((x + i) < 0 || (x + i) >= width()) continue;
+                    if (distTo[y+1][x+i] > (distTo[y][x] + energy(x+i, y+1))) {
+                        distTo[y+1][x+i] = (distTo[y][x] + energy(x+i, y+1));
+                        edgeTo[y+1][x+i] = x;
+                    }
                 }
             }
         }
 
-        // Get min array
-        double minEnergy = Double.POSITIVE_INFINITY;
-        int minIndex = -1;
-        for (int i = 0; i < width(); i++) {
-            if (distTo[height()-1][i] < minEnergy) {
-                minEnergy = distTo[height()-1][i];
-                minIndex = getIndex(i, height()-1);
+        // Find min array
+        // get min x from last row
+        double minDist = distTo[height()-1][0];
+        int minX = 0;
+        for (int i = 1; i < width(); i++) {
+            if (minDist > distTo[height()-1][i]) {
+                minDist = distTo[height()-1][i];
+                minX = i;
             }
         }
 
-        for (int i = height()-1; i > -1; i--) {
-            int x = yx[minIndex][1]; // row
-            minArray[i] = x;
-            minIndex = edgeTo[i][x];
+        // Get x for all rows
+        int[] minArray = new int[height()];
+        int thisMinX = minX;
+        minArray[height()-1] = minX;
+        for (int i = height()-2; i > -1; i--) {
+            minArray[i] = edgeTo[i+1][thisMinX];
+            thisMinX = minArray[i];
         }
-
         return minArray;
-    }
-
-    private int getMinDistIndex(double[][] distTo, boolean[][] isVisited) {
-
-        double minDist = Double.POSITIVE_INFINITY;
-        int minIndex = -1;
-
-        for (int i = 0; i < height(); i++) {
-            for (int j = 0; j < width(); j++) {
-                if (!isVisited[i][j] && distTo[i][j] < minDist) {
-                    minDist = distTo[i][j];
-                    minIndex = getIndex(j, i);
-                }
-            }
-        }
-        return minIndex;
-    }
-
-    private int getIndex(int width, int height) {
-        int ind = height*width() + width;
-        yx[ind][0] = height;
-        yx[ind][1] = width;
-        return ind;
     }
 
     // remove horizontal seam from current picture
@@ -198,18 +187,18 @@ public class SeamCarver {
         if (seam == null || seam.length >= picture.width() || picture.height() <= 1 || !isSeamValid(seam))
             throw new IllegalArgumentException();
 
-        Picture modPic = new Picture(width(), height()-1);
-        int seamIndex = 0;
+        Picture mod_pic = new Picture(width(), height()-1);
+        int seam_index = 0;
 
         for (int x = 0; x < width(); x++) {
-            int modPicIndex = 0;
+            int mod_pic_index = 0;
             for (int y = 0; y < height(); y++) {
-                if (y == seam[seamIndex]) continue;
-                modPic.setRGB(x, modPicIndex++, picture.getRGB(x, y));
+                if (y == seam[seam_index]) continue;
+                mod_pic.set(x, mod_pic_index++, picture.get(x, y));
             }
-            seamIndex++;
+            seam_index++;
         }
-        picture = modPic;
+        picture = mod_pic;
     }
 
     // remove vertical seam from current picture
@@ -218,18 +207,18 @@ public class SeamCarver {
         if (seam == null || seam.length >= picture.height() || picture.width() <= 1 || !isSeamValid(seam))
             throw new IllegalArgumentException();
 
-        Picture modPic = new Picture(width()-1, height());
-        int seamIndex = 0;
+        Picture mod_pic = new Picture(width()-1, height());
+        int seam_index = 0;
 
         for (int y = 0; y < height(); y++) {
-            int modPicIndex = 0;
+            int mod_pic_index = 0;
             for (int x = 0; x < width(); x++) {
-                if (x == seam[seamIndex]) continue;
-                modPic.setRGB(modPicIndex++, y, picture.getRGB(x, y));
+                if (x == seam[seam_index]) continue;
+                mod_pic.set(mod_pic_index++, y, picture.get(x, y));
             }
-            seamIndex++;
+            seam_index++;
         }
-        picture = modPic;
+        picture = mod_pic;
     }
 
     private boolean isSeamValid(int[] seam) {
@@ -242,24 +231,18 @@ public class SeamCarver {
     //  unit testing (optional)
     public static void main(String[] args) {
 
-        Picture picture = new Picture(5, 5);
+        Picture picture = new Picture("C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_2\\6x5.png");
         SeamCarver seamCarver = new SeamCarver(picture);
 
-        System.out.println("Picture");
         System.out.println(seamCarver.picture().toString());
 
-        int[] seamVertical = seamCarver.findVerticalSeam();
-        seamCarver.removeVerticalSeam(seamVertical);
-        System.out.println("Removing vertical seam");
+        int[] seam_vertical = seamCarver.findVerticalSeam();
+        seamCarver.removeVerticalSeam(seam_vertical);
         System.out.println(seamCarver.picture().toString());
 
-        int[] seamHorizontal = seamCarver.findHorizontalSeam();
-        seamCarver.removeHorizontalSeam(seamHorizontal);
-        System.out.println("Removing horizontal seam");
+        int[] seam_horizontal = seamCarver.findHorizontalSeam();
+        seamCarver.removeHorizontalSeam(seam_horizontal);
         System.out.println(seamCarver.picture().toString());
-
-        // TEMP
-        System.out.println("DEBUG: picture rgb - " + picture.getRGB(0, 0));
     }
 
 }

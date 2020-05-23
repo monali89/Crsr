@@ -36,21 +36,23 @@ public class ShortestPathDijkstra {
             for (DirectedEdge e: itr) {
                 int v = e.from();
                 int w = e.to();
-                if (true) {
-                    double dist = distTo[v] + e.weight();
-                    if (distTo[w] > dist) {
-                        distTo[w] = dist;
-                        visited[w] = true;
-                        edgeTo[w] = v;
-                        if (pq.contains(w)) {
-                            pq.decreaseKey(w, distTo[w]);
-                        } else {
-                            pq.insert(w, distTo[w]);
-                        }
+                double dist = distTo[v] + e.weight();
+                System.out.println("DEBUG: current - " + current + ", v - " + v + ", w - " + w + ", distTo[v] - " + distTo[v] + ", distTo[w] - " + distTo[w] + ", e.weight() - " + e.weight());
+                if (distTo[w] > dist) {
+                    distTo[w] = dist;
+                    visited[w] = true;
+                    edgeTo[w] = v;
+                    if (pq.contains(w)) {
+                        System.out.println("DEBUG: Decreasing key, pq.keyOf(w) - " + pq.keyOf(w));
+                        System.out.println("DEBUG: compare " + pq.keyOf(w) + " & " + distTo[w] + " - " + pq.keyOf(w).compareTo(distTo[w]));
+                        pq.decreaseKey(w, distTo[w]);
+                    } else {
+                        pq.insert(w, distTo[w]);
                     }
                 }
             }
         }
+        System.out.println();
 
         System.out.println("DEBUG: vertex - " + dg);
 
