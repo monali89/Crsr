@@ -9,18 +9,12 @@ import edu.princeton.cs.algs4.Picture;
 public class SeamCarver {
 
     private Picture picture;
-    private int size;
-    private final double BORDER_ENERGY = 1000.0;
+    private static final double BORDER_ENERGY = 1000.0;
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
         if (picture == null) throw new IllegalArgumentException();
         this.picture = picture;
-    }
-
-    private int getIndex(int x, int y) { // Column x, row y
-        int index = y * picture.width() + x;
-        return index;
     }
 
     // current picture
@@ -44,8 +38,8 @@ public class SeamCarver {
             throw new IllegalArgumentException();
 
         // Border coordinate
-        if(x == 0 || x == picture.width() - 1 || y == 0 || y == picture.height() - 1)
-            return 1000.0;
+        if (x == 0 || x == picture.width() - 1 || y == 0 || y == picture.height() - 1)
+            return BORDER_ENERGY;
 
         // X gradient
         int x_red = picture.get(x+1, y).getRed() - picture.get(x-1, y).getRed();
@@ -89,22 +83,6 @@ public class SeamCarver {
             }
         }
 
-        System.out.println("RESULT");
-        for (int y = 0; y < height(); y++) {
-            for (int x = 0; x < width(); x++) {
-                System.out.print(distTo[y][x] + " ");
-            }
-            System.out.println();
-        }
-
-        System.out.println("EDGE TO");
-        for (int y = 0; y < height(); y++) {
-            for (int x = 0; x < width(); x++) {
-                System.out.print(edgeTo[y][x] + " ");
-            }
-            System.out.println();
-        }
-
         // Find min array
         // get min y from last row
         double minDist = distTo[0][width()-1];
@@ -116,8 +94,6 @@ public class SeamCarver {
             }
         }
 
-        System.out.println("minY: " + minY + ", minDist: " + minDist);
-
         // Get y for all rows
         int[] minArray = new int[width()];
         int thisMinY = minY;
@@ -126,12 +102,6 @@ public class SeamCarver {
             minArray[i] = edgeTo[thisMinY][i+1];
             thisMinY = minArray[i];
         }
-
-        System.out.println("Min Array");
-        for (int i = 0; i < minArray.length; i++) {
-            System.out.println("i: " + i + ", value: " + minArray[i]);
-        }
-
         return minArray;
     }
 
@@ -184,7 +154,7 @@ public class SeamCarver {
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
 
-        if (seam == null || seam.length >= picture.width() || picture.height() <= 1 || !isSeamValid(seam))
+        if (seam == null || seam.length > picture.width() || seam.length < picture.width() || picture.height() <= 1 || !isSeamValid(seam))
             throw new IllegalArgumentException();
 
         Picture mod_pic = new Picture(width(), height()-1);
@@ -204,7 +174,7 @@ public class SeamCarver {
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
 
-        if (seam == null || seam.length >= picture.height() || picture.width() <= 1 || !isSeamValid(seam))
+        if (seam == null || seam.length > picture.height() || seam.length < picture.height() || picture.width() <= 1 || !isSeamValid(seam))
             throw new IllegalArgumentException();
 
         Picture mod_pic = new Picture(width()-1, height());
@@ -231,7 +201,7 @@ public class SeamCarver {
     //  unit testing (optional)
     public static void main(String[] args) {
 
-        Picture picture = new Picture("C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_2\\6x5.png");
+        Picture picture = new Picture("../../resources/week_2/6x5.png");
         SeamCarver seamCarver = new SeamCarver(picture);
 
         System.out.println(seamCarver.picture().toString());
