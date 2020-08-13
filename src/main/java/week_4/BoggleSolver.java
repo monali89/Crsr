@@ -31,12 +31,15 @@ public class BoggleSolver {
     public Iterable<String> getAllValidWords(BoggleBoard board) {
         int totalScore = 0;
         List<String> validWords =  new ArrayList<String>();
+        List<String> allWords = new ArrayList<String>();
 
         for (int i = 0; i < board.rows(); i++) {
             for (int j = 0; j < board.cols(); j++) {
-
+                allWords.addAll(getAllWords(board, i, j));
             }
         }
+
+        System.out.println("DEBUG: All words - " + allWords);
 
         return validWords;
     }
@@ -49,16 +52,16 @@ public class BoggleSolver {
 
     // SUPPORTING FUNCTIONS
 
-    List<String> words = new ArrayList<String>();
-
+    List<String> words;
     private List<String> getAllWords(BoggleBoard b, int r, int c) {
+        words = new ArrayList<String>();
         boolean[][] isVisited = new boolean[b.rows()][b.cols()];
         StringBuilder str = new StringBuilder();
-        getAllWords_Temp(b, r, c, str, isVisited);
+        dfs(b, r, c, str, isVisited);
         return words;
     }
 
-    private void getAllWords_Temp(BoggleBoard b, int rt, int ct, StringBuilder str, boolean[][] isVisited) {
+    private void dfs(BoggleBoard b, int rt, int ct, StringBuilder str, boolean[][] isVisited) {
         isVisited[rt][ct] = true;
         str.append(b.getLetter(rt, ct));
         if (str.length() == b.rows()*b.cols()) {
@@ -69,52 +72,12 @@ public class BoggleSolver {
         int[] cols = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
         for (int i = 0; i < 9; i++) {
             if (rt+rows[i] > -1 && rt+rows[i] < b.rows() && ct+cols[i] > -1 && ct+cols[i] < b.cols() && !isVisited[rt+rows[i]][ct+cols[i]]) {
-                getAllWords_Temp(b, rt+rows[i], ct+cols[i], str, isVisited);
+                dfs(b, rt+rows[i], ct+cols[i], str, isVisited);
             }
         }
         str.deleteCharAt(str.length()-1);
         isVisited[rt][ct] = false;
     }
-
-
-    /*private String getWord(BoggleBoard b, int r, int c) {
-
-        List<String> words = new ArrayList<String>();
-        Stack<Integer> rowStack = new Stack<Integer>();
-        Stack<Integer> colStack = new Stack<Integer>();
-        boolean[][] isVisited = new boolean[b.rows()][b.cols()];
-
-        rowStack.push(r);
-        colStack.push(c);
-        StringBuilder str = new StringBuilder();
-        while (!rowStack.isEmpty() && !colStack.isEmpty()) {
-            int rt = rowStack.pop();
-            int ct = colStack.pop();
-            if (!isVisited[rt][ct]) {
-                str.append(b.getLetter(rt, ct));
-                isVisited[rt][ct] = true;
-                int[] rows = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
-                int[] cols = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
-                for (int i = 0; i < 9; i++) {
-                    if ( rt+rows[i] > -1 && rt+rows[i] < b.rows() && ct+cols[i] > -1 && ct+cols[i] < b.cols() && !isVisited[rt+rows[i]][ct+cols[i]]) {
-                        rowStack.push(rt+rows[i]);
-                        colStack.push(ct+cols[i]);
-                    }
-                }
-            }
-        }
-
-        return str.toString();
-    }*/
-
-    private List<String> getAllValidWords(List<String> allWords) {
-        return null;
-    }
-
-    private void convertDict() {
-
-    }
-
 
     public static void main(String[] args) {
 
@@ -128,21 +91,14 @@ public class BoggleSolver {
         BoggleSolver solver = new BoggleSolver(dictionary);
         BoggleBoard board = new BoggleBoard(args[1]);
         int score = 0;
-        /*for (String word : solver.getAllValidWords(board)) {
+        System.out.println("Dictionary - ");
+        for (int i = 0; i < dictionary.length; i++) System.out.print(dictionary[i] + " ");
+        System.out.println();
+        System.out.println(board.toString());
+        for (String word : solver.getAllValidWords(board)) {
             StdOut.println(word);
             score += solver.scoreOf(word);
-        }*/
-
-        System.out.println(board.toString());
-
-        /*for (int i = 0; i < board.rows(); i++) {
-            for (int j = 0; j < board.cols(); j++) {
-                System.out.println("Start " + board.rows() + ", " + board.cols() + " - " + solver.getWord(board, i, j));
-            }
-        }*/
-
-        System.out.println(solver.getAllWords(board, 2, 2));
-
+        }
         StdOut.println("Score = " + score);
     }
 
