@@ -20,16 +20,14 @@ public class BoggleSolver {
     public BoggleSolver(String[] dictionary) {
 
         dict = new TrieSET();
-
-        for (int i = 0; i < dictionary.length; i++) {
-            dict.add(dictionary[i]);
-        }
+        for (String s : dictionary) dict.add(s);
 
     }
 
     // Returns the set of all valid words in the given Boggle board, as an Iterable.
     public Iterable<String> getAllValidWords(BoggleBoard board) {
-        int totalScore = 0;
+
+        int len = board.rows() * board.cols();
         List<String> validWords =  new ArrayList<String>();
         List<String> allWords = new ArrayList<String>();
 
@@ -39,7 +37,22 @@ public class BoggleSolver {
             }
         }
 
+        System.out.println("DEBUG: Total words - " + allWords.size());
         System.out.println("DEBUG: All words - " + allWords);
+
+        for (String w: allWords) {
+            //System.out.println("DEBUG: word - " + w);
+            for (int i = 0; i < len-3; i++) {
+                for (int j = i+3; j < len; j++) {
+                    //System.out.println("DEBUG: substring - " + w.substring(i, j));
+                    if (dict.contains(w.substring(i, j))) {
+                        //System.out.print("DEBUG: Word found in dictionary - " + w.substring(i, j));
+                        //System.out.println();
+                        if (!validWords.contains(w.substring(i, j))) validWords.add(w.substring(i, j));
+                    }
+                }
+            }
+        }
 
         return validWords;
     }
@@ -47,7 +60,14 @@ public class BoggleSolver {
     // Returns the score of the given word if it is in the dictionary, zero otherwise.
     // (You can assume the word contains only the uppercase letters A through Z.)
     public int scoreOf(String word) {
-        return -1;
+
+        int len = word.length();
+        if (len < 3) return 0;
+        if (len <= 4) return 1;
+        if (len == 5) return 2;
+        if (len == 6) return 3;
+        if (len == 7) return 5;
+        else return 11;
     }
 
     // SUPPORTING FUNCTIONS
@@ -62,28 +82,34 @@ public class BoggleSolver {
     }
 
     private void dfs(BoggleBoard b, int rt, int ct, StringBuilder str, boolean[][] isVisited) {
+        //System.out.println("DEBUG: Parent(IN) - " + b.getLetter(rt, ct) + " | " + rt + ", " + ct + " | " + str);
         isVisited[rt][ct] = true;
         str.append(b.getLetter(rt, ct));
-        if (str.length() == b.rows()*b.cols()) {
+        if (str.length() == b.rows()*b.cols() && !words.contains(str.toString())) {
             words.add(str.toString());
-            return;
+            //return;
         }
         int[] rows = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
         int[] cols = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
         for (int i = 0; i < 9; i++) {
-            if (rt+rows[i] > -1 && rt+rows[i] < b.rows() && ct+cols[i] > -1 && ct+cols[i] < b.cols() && !isVisited[rt+rows[i]][ct+cols[i]]) {
-                dfs(b, rt+rows[i], ct+cols[i], str, isVisited);
+            if (rt+rows[i] > -1 && rt+rows[i] < b.rows() && ct+cols[i] > -1 && ct+cols[i] < b.cols()) {
+                //System.out.println("DEBUG: Neighbor - "  + b.getLetter(rt+rows[i], ct+cols[i]) + " | " + (rt+rows[i]) + ", " + (ct+cols[i]) + " | " + isVisited[rt+rows[i]][ct+cols[i]]);
+                if (!isVisited[rt+rows[i]][ct+cols[i]]) {
+                    dfs(b, rt+rows[i], ct+cols[i], str, isVisited);
+                }
+                //System.out.println("DEBUG: Parent - " + b.getLetter(rt, ct) + " | Neighbor - "  + b.getLetter(rt+rows[i], ct+cols[i]) + " | " + (rt+rows[i]) + ", " + (ct+cols[i]) + " | " + str);
             }
         }
         str.deleteCharAt(str.length()-1);
         isVisited[rt][ct] = false;
+        //System.out.println("DEBUG: Parent(OUT) - " + b.getLetter(rt, ct) + " | " + rt + ", " + ct + " | " + str);
     }
 
     public static void main(String[] args) {
 
         String folderPath = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_4\\";
         args = new String[2];
-        args[0] = folderPath + "dictionary-2letters.txt";
+        args[0] = folderPath + "dictionary-algs4.txt";
         args[1] = folderPath + "board4x4.txt";
 
         In in = new In(args[0]);
@@ -92,13 +118,15 @@ public class BoggleSolver {
         BoggleBoard board = new BoggleBoard(args[1]);
         int score = 0;
         System.out.println("Dictionary - ");
-        for (int i = 0; i < dictionary.length; i++) System.out.print(dictionary[i] + " ");
+        //for (int i = 0; i < dictionary.length; i++) System.out.print(dictionary[i] + " ");
         System.out.println();
         System.out.println(board.toString());
+
         for (String word : solver.getAllValidWords(board)) {
-            StdOut.println(word);
+            StdOut.print(word + ", ");
             score += solver.scoreOf(word);
         }
+        StdOut.println();
         StdOut.println("Score = " + score);
     }
 
