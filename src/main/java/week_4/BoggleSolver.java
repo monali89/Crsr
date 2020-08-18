@@ -2,7 +2,6 @@ package week_4;
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
-import edu.princeton.cs.algs4.TrieSET;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,19 +12,50 @@ import java.util.List;
 
 public class BoggleSolver {
 
-    private TrieSET dict;
+    private class Node {
+        int val;
+        private char c;
+        private Node left, mid, right;
+    }
+    private Node root;
 
     // Initializes the data structure using the given array of strings as the dictionary.
     // (You can assume each word in the dictionary contains only the uppercase letters A through Z.)
     public BoggleSolver(String[] dictionary) {
-
-        dict = new TrieSET();
-        for (String s : dictionary) dict.add(s);
-
+        root = new Node();
+        for (int i = 0; i < dictionary.length; i++) {
+            root = put(root, dictionary[i], i+1, 0);
+        }
     }
+
+    // ML START
+    private Node put(Node x, String key, int val, int d) {
+        char c = key.charAt(d);
+        if (x == null) {
+            x = new Node();
+            x.c = c;
+        }
+        if (c < x.c) x.left = put(x.left, key, val, d);
+        else if (c > x.c) x.right = put(x.right, key, val, d);
+        else if (d < key.length() - 1) x.mid = put(x.mid, key, val, d+1);
+        else x.val = val;
+        return x;
+    }
+
+    private Node get(Node x, String key, int d) {
+        if (x == null) return null;
+        char c = key.charAt(d);
+        if (c < x.c) return get(x.left, key, d);
+        else if (c > x.c) return get(x.right, key, d);
+        else if (d < key.length() - 1) return get(x.mid, key, d+1);
+        else return x;
+    }
+    // ML END
 
     // Returns the set of all valid words in the given Boggle board, as an Iterable.
     public Iterable<String> getAllValidWords(BoggleBoard board) {
+
+        long startTime = System.currentTimeMillis();
 
         int len = board.rows() * board.cols();
         List<String> validWords =  new ArrayList<String>();
@@ -37,22 +67,23 @@ public class BoggleSolver {
             }
         }
 
-        System.out.println("DEBUG: Total words - " + allWords.size());
-        System.out.println("DEBUG: All words - " + allWords);
-
         for (String w: allWords) {
-            //System.out.println("DEBUG: word - " + w);
             for (int i = 0; i < len-3; i++) {
                 for (int j = i+3; j < len; j++) {
-                    //System.out.println("DEBUG: substring - " + w.substring(i, j));
-                    if (dict.contains(w.substring(i, j))) {
-                        //System.out.print("DEBUG: Word found in dictionary - " + w.substring(i, j));
-                        //System.out.println();
-                        if (!validWords.contains(w.substring(i, j))) validWords.add(w.substring(i, j));
+                    Node t = get(root, w.substring(i, j), 0);
+                    if (t != null && t.val > 0) {
+                        if (!validWords.contains(w.substring(i, j)))
+                            validWords.add(w.substring(i, j));
                     }
                 }
             }
         }
+
+        System.out.println("DEBUG: Total words - " + allWords.size());
+        System.out.println("DEBUG: Total valid words - " + validWords.size());
+
+        long endTime = System.currentTimeMillis();
+        System.out.println("DEBUG: Total run time - " + (endTime - startTime));
 
         return validWords;
     }
