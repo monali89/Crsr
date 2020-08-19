@@ -17,15 +17,19 @@ public class BoggleSolver {
         private char c;
         private Node left, mid, right;
     }
-    private Node root;
+
+    private final Node root;
+    private List<String> validWords;
 
     // Initializes the data structure using the given array of strings as the dictionary.
     // (You can assume each word in the dictionary contains only the uppercase letters A through Z.)
     public BoggleSolver(String[] dictionary) {
-        root = new Node();
+        Node root1;
+        root1 = new Node();
         for (int i = 0; i < dictionary.length; i++) {
-            root = put(root, dictionary[i], i+1, 0);
+            root1 = put(root1, dictionary[i], i+1, 0);
         }
+        root = root1;
     }
 
     // ML START
@@ -53,11 +57,10 @@ public class BoggleSolver {
     // ML END
 
     // Returns the set of all valid words in the given Boggle board, as an Iterable.
-    //private List<String> allWords;
-    private List<String> validWords;
+
     public Iterable<String> getAllValidWords(BoggleBoard board) {
 
-        long startTime = System.currentTimeMillis();
+        // long startTime = System.currentTimeMillis();
         validWords = new ArrayList<String>();
         for (int i = 0; i < board.rows(); i++) {
             for (int j = 0; j < board.cols(); j++) {
@@ -65,9 +68,10 @@ public class BoggleSolver {
             }
         }
 
-        System.out.println("DEBUG: Total valid words - " + validWords.size());
+        /* System.out.println("DEBUG: Total valid words - " + validWords.size());
         long endTime = System.currentTimeMillis();
-        System.out.println("DEBUG: Total run time - " + (endTime - startTime));
+        System.out.println("DEBUG: Total run time - " + (endTime - startTime)); */
+
         return validWords;
     }
 
@@ -92,23 +96,25 @@ public class BoggleSolver {
     }
 
     private void dfs(BoggleBoard b, int rt, int ct, StringBuilder str, boolean[][] isVisited) {
+
         isVisited[rt][ct] = true;
         str.append(b.getLetter(rt, ct));
+
+        if (str.length() >= 3) {
+            Node t = get(root, str.toString(), 0);
+            if (t != null && t.val > 0 && !validWords.contains(str.toString())) {
+                validWords.add(str.toString());
+            }
+        }
+
         int[] rows = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
         int[] cols = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
         for (int i = 0; i < 9; i++) {
-            if (rt+rows[i] > -1 && rt+rows[i] < b.rows() && ct+cols[i] > -1 && ct+cols[i] < b.cols()) {
-                if (!isVisited[rt+rows[i]][ct+cols[i]]) {
-                    dfs(b, rt+rows[i], ct+cols[i], str, isVisited);
-                    if (str.length() < 3) continue;
-                    Node t = get(root, str.toString(), 0);
-                    if (t != null && t.val > 0) {
-                        if (!validWords.contains(str.toString()))
-                            validWords.add(str.toString());
-                    }
-                }
+            if (rt+rows[i] > -1 && rt+rows[i] < b.rows() && ct+cols[i] > -1 && ct+cols[i] < b.cols() && !isVisited[rt+rows[i]][ct+cols[i]]) {
+                dfs(b, rt + rows[i], ct + cols[i], str, isVisited);
             }
         }
+
         str.deleteCharAt(str.length()-1);
         isVisited[rt][ct] = false;
     }
