@@ -32,7 +32,6 @@ public class BoggleSolver {
         root = root1;
     }
 
-    // ML START
     private Node put(Node x, String key, int val, int d) {
         char c = key.charAt(d);
         if (x == null) {
@@ -54,17 +53,18 @@ public class BoggleSolver {
         else if (d < key.length() - 1) return get(x.mid, key, d+1);
         else return x;
     }
-    // ML END
 
     // Returns the set of all valid words in the given Boggle board, as an Iterable.
-
     public Iterable<String> getAllValidWords(BoggleBoard board) {
 
         // long startTime = System.currentTimeMillis();
+
         validWords = new ArrayList<String>();
+        boolean[][] isVisited = new boolean[board.rows()][board.cols()];
+        StringBuilder str = new StringBuilder();
         for (int i = 0; i < board.rows(); i++) {
             for (int j = 0; j < board.cols(); j++) {
-                getAllWords(board, i, j);
+                dfs(board, i, j, str, isVisited);
             }
         }
 
@@ -73,6 +73,27 @@ public class BoggleSolver {
         System.out.println("DEBUG: Total run time - " + (endTime - startTime)); */
 
         return validWords;
+    }
+
+    private void dfs(BoggleBoard b, int rt, int ct, StringBuilder str, boolean[][] isVisited) {
+
+        isVisited[rt][ct] = true;
+        str.append(b.getLetter(rt, ct));
+        if (str.length() >= 3) {
+            Node t = get(root, str.toString(), 0);
+            if (t != null && t.val > 0 && !validWords.contains(str.toString())) {
+                validWords.add(str.toString());
+            }
+        }
+        int[] rows = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
+        int[] cols = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
+        for (int i = 0; i < 9; i++) {
+            if (rt+rows[i] > -1 && rt+rows[i] < b.rows() && ct+cols[i] > -1 && ct+cols[i] < b.cols() && !isVisited[rt+rows[i]][ct+cols[i]]) {
+                dfs(b, rt + rows[i], ct + cols[i], str, isVisited);
+            }
+        }
+        str.deleteCharAt(str.length()-1);
+        isVisited[rt][ct] = false;
     }
 
     // Returns the score of the given word if it is in the dictionary, zero otherwise.
@@ -87,38 +108,6 @@ public class BoggleSolver {
         if (len == 7) return 5;
         else return 11;
     }
-
-    // ML START
-    private void getAllWords(BoggleBoard b, int r, int c) {
-        boolean[][] isVisited = new boolean[b.rows()][b.cols()];
-        StringBuilder str = new StringBuilder();
-        dfs(b, r, c, str, isVisited);
-    }
-
-    private void dfs(BoggleBoard b, int rt, int ct, StringBuilder str, boolean[][] isVisited) {
-
-        isVisited[rt][ct] = true;
-        str.append(b.getLetter(rt, ct));
-
-        if (str.length() >= 3) {
-            Node t = get(root, str.toString(), 0);
-            if (t != null && t.val > 0 && !validWords.contains(str.toString())) {
-                validWords.add(str.toString());
-            }
-        }
-
-        int[] rows = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
-        int[] cols = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
-        for (int i = 0; i < 9; i++) {
-            if (rt+rows[i] > -1 && rt+rows[i] < b.rows() && ct+cols[i] > -1 && ct+cols[i] < b.cols() && !isVisited[rt+rows[i]][ct+cols[i]]) {
-                dfs(b, rt + rows[i], ct + cols[i], str, isVisited);
-            }
-        }
-
-        str.deleteCharAt(str.length()-1);
-        isVisited[rt][ct] = false;
-    }
-    // ML END
 
     public static void main(String[] args) {
 
