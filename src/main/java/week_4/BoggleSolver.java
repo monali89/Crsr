@@ -82,6 +82,7 @@ public class BoggleSolver {
 
         isVisited[rt][ct] = true;
         str.append(b.getLetter(rt, ct));
+        if (b.getLetter(rt, ct) == 'Q') str.append("U");
         if (str.length() >= 3) {
             int idx = (str.charAt(0)-'A')*26 + (str.charAt(1)-'A');
             Trie t = get(trieArray[idx], str.toString(), 2);
@@ -96,6 +97,8 @@ public class BoggleSolver {
                 dfs(b, rt + rows[i], ct + cols[i], str, isVisited);
             }
         }
+        if (b.getLetter(rt, ct) == 'Q')
+            str.deleteCharAt(str.length()-1);
         if (str.length() > 0) str.deleteCharAt(str.length()-1);
         isVisited[rt][ct] = false;
     }
@@ -118,7 +121,7 @@ public class BoggleSolver {
         String folderPath = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_4\\";
         args = new String[2];
         args[0] = folderPath + "dictionary-yawl.txt";
-        args[1] = folderPath + "board-points4540.txt";
+        args[1] = folderPath + "board-q.txt";
 
         In in = new In(args[0]);
         String[] dictionary = in.readAllStrings();
