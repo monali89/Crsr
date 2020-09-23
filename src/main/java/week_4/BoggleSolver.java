@@ -3,8 +3,7 @@ package week_4;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Monali L on 7/22/2020
@@ -18,8 +17,34 @@ public class BoggleSolver {
         Trie left, mid, right;
     }
 
+    private class Node {
+        char c;
+        int row;
+        int col;
+        boolean isVisited;
+        List<Node> neighbors;
+
+        Node(char c, int row, int col, boolean isVisited) {
+            this.c = c;
+            this.row = row;
+            this.col = col;
+            this.isVisited = isVisited;
+            neighbors = new ArrayList<Node>();
+        }
+
+        public void setNeighbors(char c, int row, int col, boolean isVisited) {
+            Node n = new Node(c, row, col, isVisited);
+            neighbors.add(n);
+        }
+
+        public Iterable<Node> getNeighbors() {
+            return neighbors;
+        }
+    }
+
     private final Trie[] trieArray;
-    private List<String> validWords;
+    private Set<String> validWords;
+
 
     // Initializes the data structure using the given array of strings as the dictionary.
     // (You can assume each word in the dictionary contains only the uppercase letters A through Z.)
@@ -58,18 +83,27 @@ public class BoggleSolver {
     }
 
     // Returns the set of all valid words in the given Boggle board, as an Iterable.
+    int totalRows;
+    int totalCols;
+    private List<String> allWords;
     public Iterable<String> getAllValidWords(BoggleBoard board) {
 
         long startTime = System.currentTimeMillis();
 
-        validWords = new ArrayList<String>();
+        validWords = new HashSet<String>();
+        allWords = new ArrayList<String>();
         boolean[][] isVisited = new boolean[board.rows()][board.cols()];
+        boolean[][] isTraversed = new boolean[board.rows()][board.cols()];
         StringBuilder str = new StringBuilder();
         for (int i = 0; i < board.rows(); i++) {
             for (int j = 0; j < board.cols(); j++) {
                 dfs(board, i, j, str, isVisited);
             }
         }
+
+        totalRows = board.rows();
+        totalCols = board.cols();
+        Node root = new Node(board.getLetter(0, 0), 0, 0, false);
 
         System.out.println("DEBUG: Total valid words - " + validWords.size());
         long endTime = System.currentTimeMillis();
@@ -84,12 +118,10 @@ public class BoggleSolver {
         str.append(b.getLetter(rt, ct));
         if (b.getLetter(rt, ct) == 'Q') str.append("U");
         if (str.length() >= 3) {
-            int idx = (str.charAt(0)-'A')*26 + (str.charAt(1)-'A');
-            Trie t = get(trieArray[idx], str.toString(), 2);
-            if (t != null && t.val > 0 && !validWords.contains(str.toString())) {
-                validWords.add(str.toString());
-            }
-         }
+           int idx = (str.charAt(0)-'A')*26 + (str.charAt(1)-'A');
+           Trie t = get(trieArray[idx], str.toString(), 2);
+           if (t != null && t.val > 0) validWords.add(str.toString());
+        }
         int[] rows = {-1, -1, -1, 0, 0, 0, 1, 1, 1};
         int[] cols = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
         for (int i = 0; i < 9; i++) {
@@ -97,8 +129,7 @@ public class BoggleSolver {
                 dfs(b, rt + rows[i], ct + cols[i], str, isVisited);
             }
         }
-        if (b.getLetter(rt, ct) == 'Q')
-            str.deleteCharAt(str.length()-1);
+        if (b.getLetter(rt, ct) == 'Q') str.deleteCharAt(str.length()-1);
         if (str.length() > 0) str.deleteCharAt(str.length()-1);
         isVisited[rt][ct] = false;
     }
@@ -121,7 +152,7 @@ public class BoggleSolver {
         String folderPath = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_4\\";
         args = new String[2];
         args[0] = folderPath + "dictionary-yawl.txt";
-        args[1] = folderPath + "board-q.txt";
+        args[1] = folderPath + "board-points4540.txt";
 
         In in = new In(args[0]);
         String[] dictionary = in.readAllStrings();
@@ -133,13 +164,11 @@ public class BoggleSolver {
         System.out.println(board.toString());
 
         for (String word : solver.getAllValidWords(board)) {
-            StdOut.print(word + ", ");
+            // StdOut.print(word + ", ");
             score += solver.scoreOf(word);
         }
         StdOut.println();
         StdOut.println("Score = " + score);
-
-        // System.out.println("DEBUG: Keys with prefix TAI - " + solver.keysWithPrefix("TAI"));
     }
 
 }
