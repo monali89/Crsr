@@ -6,9 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,28 +19,7 @@ public class BaseballElimination {
     int[] l;
     int[] r;
     int[][] g;
-    List<String> teams;
-
-    class Team {
-
-        String name;
-        int wins;
-        int losses;
-        int remaining;
-        Map<String, Integer> gamesLeftMap;
-
-        Team(String name, int wins, int losses, int remaining) {
-            this.name = name;
-            this.wins = wins;
-            this.losses = losses;
-            this.remaining = remaining;
-            gamesLeftMap = new HashMap<String, Integer>();
-        }
-
-        public void addGamesLeft(String teamName, int gamesLeft) {
-            gamesLeftMap.put(teamName, gamesLeft);
-        }
-    }
+    Map<String, Integer> teams;
 
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
@@ -53,12 +30,12 @@ public class BaseballElimination {
             l = new int[lines];
             r = new int[lines];
             g = new int[lines][lines];
-            teams = new ArrayList<String>();
+            teams = new HashMap<String, Integer>();
 
             for (int i = 0; i < lines; i++) {
                 String line = bfr.readLine();
                 String[] arr = line.split(" ");
-                teams.add(arr[0]);
+                teams.put(arr[0], i);
                 w[i] = Integer.parseInt(arr[1]);
                 l[i] = Integer.parseInt(arr[2]);
                 r[i] = Integer.parseInt(arr[3]);
@@ -80,27 +57,27 @@ public class BaseballElimination {
 
     // all teams
     public Iterable<String> teams() {
-        return teams;
+        return teams.keySet();
     }
 
     // number of wins for given team
     public int wins(String team) {
-        return -1;
+        return w[teams.get(team)];
     }
 
     // number of losses for given team
     public int losses(String team) {
-        return -1;
+        return l[teams.get(team)];
     }
 
     // number of remaining games for given team
     public int remaining(String team) {
-        return -1;
+        return w[teams.get(team)];
     }
 
     // number of remaining games between team1 and team2
     public int against(String team1, String team2) {
-        return -1;
+        return g[teams.get(team1)][teams.get(team2)];
     }
 
     // is given team eliminated?
