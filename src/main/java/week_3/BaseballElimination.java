@@ -15,10 +15,10 @@ import java.util.Map;
 
 public class BaseballElimination {
 
-    int[] w;
-    int[] l;
-    int[] r;
-    int[][] g;
+    int[] w;   // i's wins
+    int[] l;   // i's losses
+    int[] r;   // i's total remaining games
+    int[][] g; // i's games left to play against team j
     Map<String, Integer> teams;
 
     // create a baseball division from given filename in format specified below
@@ -48,6 +48,25 @@ public class BaseballElimination {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private int[] ek() {
+        while (true) {
+            
+        }
+    }
+
+    // Get the team with the least possible wins (current wins + remaining games)
+    private int getLowestTeam() {
+        int minGames = w[0] + r[0];
+        int minTeam = 0;
+        for (int i = 1; i < teams.size(); i++) {
+            if (minGames < (w[i] + r[i])) {
+                minTeam = i;
+                minGames = w[i] + r[i];
+            }
+        }
+        return minTeam;
     }
 
     // number of teams
