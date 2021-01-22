@@ -21,6 +21,8 @@ public class BaseballElimination {
     int[][] g; // i's games left to play against team j
     Map<String, Integer> teams;
 
+    int[][] flow;
+
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
         try {
@@ -32,6 +34,8 @@ public class BaseballElimination {
             g = new int[lines][lines];
             teams = new HashMap<String, Integer>();
 
+            flow = new int[lines][lines];
+
             for (int i = 0; i < lines; i++) {
                 String line = bfr.readLine();
                 String[] arr = line.split(" ");
@@ -41,6 +45,7 @@ public class BaseballElimination {
                 r[i] = Integer.parseInt(arr[3]);
                 for (int j = 0; j < lines; j++) {
                     g[i][j] = Integer.parseInt(arr[j+4]);
+                    flow[i][j] = 0;
                 }
             }
         } catch (FileNotFoundException e) {
@@ -50,10 +55,47 @@ public class BaseballElimination {
         }
     }
 
-    private int[] ek() {
-        while (true) {
-            
+    private int GetMaxFlow() {
+
+        // Graph representation
+
+        return -1;
+    }
+
+    private int[] bfs() {
+
+        Map<String, String> pred = new HashMap<String, String>();
+
+        // initialize predecessor for all vertices to null
+        pred.put("0", null);
+
+        for (int i = 0; i < g.length; i++) {
+            pred.put(String.valueOf(i), null);
+            for (int j = 0; j < g.length; j++) {
+                pred.put(i + "" + j, null);
+            }
         }
+
+        int sink = teams.size()*teams.size() + teams.size() + 1;
+        pred.put(String.valueOf(sink), null);
+
+        // source to game vertex
+        for (int i = 0; i < g.length; i++) {
+            for (int j = 0; j < g.length; j++) {
+                // check how many games still remaining to play
+                if (g[i][j] <= 0) continue;
+                if (g[i][j] > flow[i][j]) {
+                    pred.put(i + "" + j, "0");
+                }
+            }
+        }
+
+        // game vertex to team vertex
+        
+
+        // team vertex to sink
+
+        return null;
     }
 
     // Get the team with the least possible wins (current wins + remaining games)
