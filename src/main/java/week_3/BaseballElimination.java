@@ -21,23 +21,30 @@ public class BaseballElimination {
     int[][] g; // i's games left to play against team j
     Map<String, Integer> teams;
 
+    // Graph representation
+    int[] vertices;
+    int[][] capacity;
     int[][] flow;
+    int source;
+    int sink;
+
+    // Mapping for graph integer index to actual vertex
+    // Map<Integer, String> indexMap;
+    Map<String, Integer> indexMap;
 
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
         try {
             BufferedReader bfr = new BufferedReader(new FileReader(filename));
-            int lines = bfr.read();
+            int lines = Integer.parseInt(bfr.readLine());
             w = new int[lines];
             l = new int[lines];
             r = new int[lines];
             g = new int[lines][lines];
             teams = new HashMap<String, Integer>();
 
-            flow = new int[lines][lines];
-
             for (int i = 0; i < lines; i++) {
-                String line = bfr.readLine();
+                String line = bfr.readLine().replaceAll(" +", " ");
                 String[] arr = line.split(" ");
                 teams.put(arr[0], i);
                 w[i] = Integer.parseInt(arr[1]);
@@ -45,9 +52,96 @@ public class BaseballElimination {
                 r[i] = Integer.parseInt(arr[3]);
                 for (int j = 0; j < lines; j++) {
                     g[i][j] = Integer.parseInt(arr[j+4]);
-                    flow[i][j] = 0;
                 }
             }
+
+            // Converting input into graph representation
+
+            // START
+
+            // total graph vertices = source + total game vertices + team vertices + sink
+            int size = 1 + teams.size() * teams.size() + teams.size() + 1;
+            source = 0;
+            sink = size - 1;
+
+            // create a mapping to refer to actual vertex from graph's integer vertex
+            vertices = new int[size];
+            for (int i = 0; i < size; i++) {
+                vertices[i] = i;
+            }
+
+            //indexMap = new HashMap<Integer, String>();
+            indexMap = new HashMap<String, Integer>();
+            int graphIndex = source;
+            indexMap.put("0", graphIndex++); // source vertex
+
+            for (int i = 0; i < g.length; i++) { // game vertices
+                for (int j = 0; j < g[i].length; j++) {
+                    indexMap.put(i + "-" + j, graphIndex++);
+                }
+            }
+
+            for (int i = 0; i < g.length; i++) { // team vertices
+                indexMap.put(String.valueOf(i), graphIndex++);
+            }
+
+            indexMap.put(String.valueOf(sink), graphIndex); // sink vertex
+
+            if (graphIndex >= size) throw new IllegalStateException();
+
+            // Initialize capacities
+
+            capacity = new int[size][size];
+            graphIndex = 1; // capacities from source to game vertices
+            for (int i = 0; i < g.length; i++) {
+                for (int j = 0; j < g[i].length; j++) {
+                    capacity[source][graphIndex++] = g[i][j];
+                }
+            }
+
+            for (int i = 0; i < g.length; i++) { // capacities from game vertices to team vertices
+                for (int j = 0; j < g[i].length; j++) {
+                    capacity[indexMap.get(i + "-" + j)][i] = -1;
+                    capacity[indexMap.get(i + "-" + j)][j] = -1;
+                }
+            }
+
+            for (int i = 0; i < g.length; i++) {
+                int teamIndex = indexMap.get(String.valueOf(i));
+                capacity[teamIndex][sink] = w[i] + r[i] - w[getLowestTeam()];
+            }
+
+            flow = new int[size][size]; // initialize remaining flow to be -1/null
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    flow[i][j] = -1;
+                }
+            }
+
+            // print everything to debug
+            System.out.println("Source - " + source);
+            System.out.println("Sink - " + sink);
+            System.out.print("Vertices - ");
+            for (int i = 0; i < size; i++) {
+                System.out.print(i + ", ");
+            }
+            System.out.println();
+            System.out.println("Capacities -> ");
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    System.out.print(capacity[i][j] + " ");
+                }
+                System.out.println();
+            }
+            System.out.println();
+
+            System.out.println("Index <-> vertex map");
+            for (String s: indexMap.keySet()) {
+                System.out.println(s + " - " + indexMap.get(s));
+            }
+
+            // END
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -56,45 +150,10 @@ public class BaseballElimination {
     }
 
     private int GetMaxFlow() {
-
-        // Graph representation
-
         return -1;
     }
 
     private int[] bfs() {
-
-        Map<String, String> pred = new HashMap<String, String>();
-
-        // initialize predecessor for all vertices to null
-        pred.put("0", null);
-
-        for (int i = 0; i < g.length; i++) {
-            pred.put(String.valueOf(i), null);
-            for (int j = 0; j < g.length; j++) {
-                pred.put(i + "" + j, null);
-            }
-        }
-
-        int sink = teams.size()*teams.size() + teams.size() + 1;
-        pred.put(String.valueOf(sink), null);
-
-        // source to game vertex
-        for (int i = 0; i < g.length; i++) {
-            for (int j = 0; j < g.length; j++) {
-                // check how many games still remaining to play
-                if (g[i][j] <= 0) continue;
-                if (g[i][j] > flow[i][j]) {
-                    pred.put(i + "" + j, "0");
-                }
-            }
-        }
-
-        // game vertex to team vertex
-        
-
-        // team vertex to sink
-
         return null;
     }
 
@@ -152,7 +211,12 @@ public class BaseballElimination {
     }
 
     public static void main(String[] args) {
-        BaseballElimination division = new BaseballElimination(args[0]);
+
+        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams4.txt";
+
+        //BaseballElimination division = new BaseballElimination(args[0]);
+        BaseballElimination division = new BaseballElimination(file);
+
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
