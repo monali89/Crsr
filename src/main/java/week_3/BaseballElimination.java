@@ -1,11 +1,13 @@
 package week_3;
 
+import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -118,28 +120,6 @@ public class BaseballElimination {
                 }
             }
 
-            // print everything to debug
-            System.out.println("Source - " + source);
-            System.out.println("Sink - " + sink);
-            System.out.print("Vertices - ");
-            for (int i = 0; i < size; i++) {
-                System.out.print(i + ", ");
-            }
-            System.out.println();
-            System.out.println("Capacities -> ");
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
-                    System.out.print(capacity[i][j] + " ");
-                }
-                System.out.println();
-            }
-            System.out.println();
-
-            System.out.println("Index <-> vertex map");
-            for (String s: indexMap.keySet()) {
-                System.out.println(s + " - " + indexMap.get(s));
-            }
-
             // END
 
         } catch (FileNotFoundException e) {
@@ -154,7 +134,23 @@ public class BaseballElimination {
     }
 
     private int[] bfs() {
-        return null;
+        int[] pred = new int[vertices.length];
+        Arrays.fill(pred, -1);
+
+        Queue<Integer> queue = new Queue<Integer>();
+        queue.enqueue(source);
+
+        while (!queue.isEmpty()) {
+            int v = queue.dequeue();
+            for (int i = 0; i < capacity[v].length; i++) {
+                if (capacity[v][i] == -1) continue;
+                if (pred[i] == -1 && capacity[v][i] > flow[v][i]) {
+                    pred[i] = v;
+                    queue.enqueue(i);
+                }
+            }
+        }
+        return pred;
     }
 
     // Get the team with the least possible wins (current wins + remaining games)
@@ -202,6 +198,17 @@ public class BaseballElimination {
 
     // is given team eliminated?
     public boolean isEliminated(String team) {
+
+        // trivial elimination
+        int index = teams.get(team);
+        for (int i = 0; i < teams.size(); i++) {
+            if (i == index) continue;
+            if (w[index] + r[index] < w[i]) return true;
+        }
+
+        // non trivial elimination
+        
+
         return false;
     }
 
