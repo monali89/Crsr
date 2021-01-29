@@ -1,7 +1,6 @@
 package week_3;
 
 import edu.princeton.cs.algs4.Queue;
-import edu.princeton.cs.algs4.StdOut;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -126,23 +125,27 @@ public class BaseballElimination {
         // START
 
         // total graph vertices = source + total game vertices + team vertices + sink
-        int size = teams.size() * teams.size() + teams.size() + 1;
+        int size = 1 + getComb(teams.size()-1, 2) + (teams.size()-1) + 1;
+
         source = 0;
         sink = size - 1;
 
         // create a mapping to refer to actual vertex from graph's integer vertex
         vertices = new int[size];
         for (int i = 0; i < size; i++) {
+            if (i == teams.get(team)) continue;
             vertices[i] = i;
         }
 
         //indexMap = new HashMap<Integer, String>();
         indexMap = new HashMap<String, Integer>();
         int graphIndex = source;
-        indexMap.put("0", graphIndex++); // source vertex
+        indexMap.put("source", graphIndex++); // source vertex
 
         for (int i = 0; i < g.length; i++) { // game vertices
-            for (int j = 0; j < g[i].length; j++) {
+            if (i == teams.get(team)) continue;
+            for (int j = i+1; j < g[i].length; j++) {
+                if (j == teams.get(team)) continue;
                 indexMap.put(i + "-" + j, graphIndex++);
             }
         }
@@ -151,28 +154,37 @@ public class BaseballElimination {
             indexMap.put(String.valueOf(i), graphIndex++);
         }
 
-        indexMap.put(String.valueOf(sink), graphIndex); // sink vertex
+        indexMap.put("sink", graphIndex); // sink vertex
 
-        if (graphIndex >= size) throw new IllegalStateException();
+        //if (graphIndex >= size) throw new IllegalStateException();
 
         // Initialize capacities
 
         capacity = new int[size][size];
+        for (int i = 0; i < size; i++) {
+            Arrays.fill(capacity[i], -1);
+        }
+
         graphIndex = 1; // capacities from source to game vertices
         for (int i = 0; i < g.length; i++) {
-            for (int j = 0; j < g[i].length; j++) {
+            if (i == teams.get(team)) continue;
+            for (int j = i+1; j < g.length; j++) {
+                if (j == teams.get(team)) continue;
                 capacity[source][graphIndex++] = g[i][j];
             }
         }
 
         for (int i = 0; i < g.length; i++) { // capacities from game vertices to team vertices
-            for (int j = 0; j < g[i].length; j++) {
+            if (i == teams.get(team)) continue;
+            for (int j = i+1; j < g[i].length; j++) {
+                if (j == teams.get(team)) continue;
                 capacity[indexMap.get(i + "-" + j)][i] = -1;
                 capacity[indexMap.get(i + "-" + j)][j] = -1;
             }
         }
 
         for (int i = 0; i < g.length; i++) {
+            if (i == teams.get(team)) continue;
             int teamIndex = indexMap.get(String.valueOf(i));
             capacity[teamIndex][sink] = w[i] + r[i] - w[getLowestTeam()];
         }
@@ -180,13 +192,36 @@ public class BaseballElimination {
         flow = new int[size][size]; // initialize remaining flow to be -1/null
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                flow[i][j] = -1;
+                flow[i][j] = 0;
             }
         }
 
         // END
+        int maxFlow = edk(vertices, capacity, flow, source, sink);
+        System.out.println("Maxflow - " + maxFlow);
+
+        // check flow from source to game vertices
+        for (int i = 0; i < g.length; i++) {
+            if (i == teams.get(team)) continue;
+            for (int j = i+1; j < g.length; j++) {
+                if (j == teams.get(team)) continue;
+                if (flow[source][indexMap.get(i + "-" + j)] != 0) return true;
+            }
+        }
 
         return false;
+    }
+
+    private int getComb(int n, int r) {
+        return getFact(n) / (getFact(r) * getFact(n-r));
+    }
+
+    private int getFact(int n) {
+        int fact = 1;
+        for (int i = 2; i <= n; i++) {
+            fact = fact * i;
+        }
+        return fact;
     }
 
     private int edk(int[] vertices, int[][] capacity, int[][] flow, int source, int sink) {
@@ -247,12 +282,14 @@ public class BaseballElimination {
 
     public static void main(String[] args) {
 
-        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams4.txt";
+        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams5.txt";
 
         //BaseballElimination division = new BaseballElimination(args[0]);
         BaseballElimination division = new BaseballElimination(file);
 
-        for (String team : division.teams()) {
+        System.out.println(division.isEliminated("Detroit"));
+
+        /*for (String team : division.teams()) {
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
                 for (String t : division.certificateOfElimination(team)) {
@@ -263,7 +300,7 @@ public class BaseballElimination {
             else {
                 StdOut.println(team + " is not eliminated");
             }
-        }
+        }*/
     }
 
 }
