@@ -23,17 +23,6 @@ public class BaseballElimination {
     int[][] g; // i's games left to play against team j
     Map<String, Integer> teams;
 
-    // Graph representation
-    int[] vertices;
-    int[][] capacity;
-    int[][] flow;
-    int source;
-    int sink;
-
-    // Mapping for graph integer index to actual vertex
-    // Map<Integer, String> indexMap;
-    Map<String, Integer> indexMap;
-
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
         try {
@@ -57,100 +46,11 @@ public class BaseballElimination {
                 }
             }
 
-            // Converting input into graph representation
-
-            // START
-
-            // total graph vertices = source + total game vertices + team vertices + sink
-            int size = 1 + teams.size() * teams.size() + teams.size() + 1;
-            source = 0;
-            sink = size - 1;
-
-            // create a mapping to refer to actual vertex from graph's integer vertex
-            vertices = new int[size];
-            for (int i = 0; i < size; i++) {
-                vertices[i] = i;
-            }
-
-            //indexMap = new HashMap<Integer, String>();
-            indexMap = new HashMap<String, Integer>();
-            int graphIndex = source;
-            indexMap.put("0", graphIndex++); // source vertex
-
-            for (int i = 0; i < g.length; i++) { // game vertices
-                for (int j = 0; j < g[i].length; j++) {
-                    indexMap.put(i + "-" + j, graphIndex++);
-                }
-            }
-
-            for (int i = 0; i < g.length; i++) { // team vertices
-                indexMap.put(String.valueOf(i), graphIndex++);
-            }
-
-            indexMap.put(String.valueOf(sink), graphIndex); // sink vertex
-
-            if (graphIndex >= size) throw new IllegalStateException();
-
-            // Initialize capacities
-
-            capacity = new int[size][size];
-            graphIndex = 1; // capacities from source to game vertices
-            for (int i = 0; i < g.length; i++) {
-                for (int j = 0; j < g[i].length; j++) {
-                    capacity[source][graphIndex++] = g[i][j];
-                }
-            }
-
-            for (int i = 0; i < g.length; i++) { // capacities from game vertices to team vertices
-                for (int j = 0; j < g[i].length; j++) {
-                    capacity[indexMap.get(i + "-" + j)][i] = -1;
-                    capacity[indexMap.get(i + "-" + j)][j] = -1;
-                }
-            }
-
-            for (int i = 0; i < g.length; i++) {
-                int teamIndex = indexMap.get(String.valueOf(i));
-                capacity[teamIndex][sink] = w[i] + r[i] - w[getLowestTeam()];
-            }
-
-            flow = new int[size][size]; // initialize remaining flow to be -1/null
-            for (int i = 0; i < size; i++) {
-                for (int j = 0; j < size; j++) {
-                    flow[i][j] = -1;
-                }
-            }
-
-            // END
-
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private int GetMaxFlow() {
-        return -1;
-    }
-
-    private int[] bfs() {
-        int[] pred = new int[vertices.length];
-        Arrays.fill(pred, -1);
-
-        Queue<Integer> queue = new Queue<Integer>();
-        queue.enqueue(source);
-
-        while (!queue.isEmpty()) {
-            int v = queue.dequeue();
-            for (int i = 0; i < capacity[v].length; i++) {
-                if (capacity[v][i] == -1) continue;
-                if (pred[i] == -1 && capacity[v][i] > flow[v][i]) {
-                    pred[i] = v;
-                    queue.enqueue(i);
-                }
-            }
-        }
-        return pred;
     }
 
     // Get the team with the least possible wins (current wins + remaining games)
@@ -207,9 +107,137 @@ public class BaseballElimination {
         }
 
         // non trivial elimination
-        
+
+        // create a flow network without given team
+
+        // Graph representation
+        int[] vertices;
+        int[][] capacity;
+        int[][] flow;
+        int source;
+        int sink;
+
+        // Mapping for graph integer index to actual vertex
+        // Map<Integer, String> indexMap;
+        Map<String, Integer> indexMap;
+
+        // Converting input into graph representation
+
+        // START
+
+        // total graph vertices = source + total game vertices + team vertices + sink
+        int size = teams.size() * teams.size() + teams.size() + 1;
+        source = 0;
+        sink = size - 1;
+
+        // create a mapping to refer to actual vertex from graph's integer vertex
+        vertices = new int[size];
+        for (int i = 0; i < size; i++) {
+            vertices[i] = i;
+        }
+
+        //indexMap = new HashMap<Integer, String>();
+        indexMap = new HashMap<String, Integer>();
+        int graphIndex = source;
+        indexMap.put("0", graphIndex++); // source vertex
+
+        for (int i = 0; i < g.length; i++) { // game vertices
+            for (int j = 0; j < g[i].length; j++) {
+                indexMap.put(i + "-" + j, graphIndex++);
+            }
+        }
+
+        for (int i = 0; i < g.length; i++) { // team vertices
+            indexMap.put(String.valueOf(i), graphIndex++);
+        }
+
+        indexMap.put(String.valueOf(sink), graphIndex); // sink vertex
+
+        if (graphIndex >= size) throw new IllegalStateException();
+
+        // Initialize capacities
+
+        capacity = new int[size][size];
+        graphIndex = 1; // capacities from source to game vertices
+        for (int i = 0; i < g.length; i++) {
+            for (int j = 0; j < g[i].length; j++) {
+                capacity[source][graphIndex++] = g[i][j];
+            }
+        }
+
+        for (int i = 0; i < g.length; i++) { // capacities from game vertices to team vertices
+            for (int j = 0; j < g[i].length; j++) {
+                capacity[indexMap.get(i + "-" + j)][i] = -1;
+                capacity[indexMap.get(i + "-" + j)][j] = -1;
+            }
+        }
+
+        for (int i = 0; i < g.length; i++) {
+            int teamIndex = indexMap.get(String.valueOf(i));
+            capacity[teamIndex][sink] = w[i] + r[i] - w[getLowestTeam()];
+        }
+
+        flow = new int[size][size]; // initialize remaining flow to be -1/null
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                flow[i][j] = -1;
+            }
+        }
+
+        // END
 
         return false;
+    }
+
+    private int edk(int[] vertices, int[][] capacity, int[][] flow, int source, int sink) {
+        int maxFlow = 0;
+        int[] parent = bfs(vertices, capacity, flow, source, sink);
+
+        while (parent[sink] != -1) {
+
+            int pathFlow = Integer.MAX_VALUE;
+
+            // Calculate the minimum flow that can be sent on this path
+            for (int startVertex = parent[sink], endVertex = sink;
+                 startVertex != -1;
+                 endVertex = startVertex, startVertex = parent[endVertex]) {
+                pathFlow = Math.min(pathFlow, capacity[startVertex][endVertex] - flow[startVertex][endVertex]);
+            }
+
+            // Add current min path flow to overall flow
+            maxFlow += pathFlow;
+
+            // Update flow by the minimum capacity
+            for (int startVertex = parent[sink], endVertex = sink;
+                 startVertex != -1;
+                 endVertex = startVertex, startVertex = parent[endVertex]) {
+                flow[startVertex][endVertex] += pathFlow;
+                flow[endVertex][startVertex] -= pathFlow;
+            }
+            parent = bfs(vertices, capacity, flow, source, sink);
+        }
+
+        return maxFlow;
+    }
+
+    private int[] bfs(int[] vertices, int[][] capacity, int[][] flow, int source, int sink) {
+        int[] pred = new int[vertices.length];
+        Arrays.fill(pred, -1);
+
+        Queue<Integer> queue = new Queue<Integer>();
+        queue.enqueue(source);
+
+        while (!queue.isEmpty()) {
+            int v = queue.dequeue();
+            for (int i = 0; i < capacity[v].length; i++) {
+                if (capacity[v][i] == -1) continue;
+                if (pred[i] == -1 && capacity[v][i] > flow[v][i]) {
+                    pred[i] = v;
+                    queue.enqueue(i);
+                }
+            }
+        }
+        return pred;
     }
 
     // subset R of teams that eliminates given team; null if not eliminated
