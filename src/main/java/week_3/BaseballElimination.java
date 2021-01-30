@@ -1,14 +1,13 @@
 package week_3;
 
 import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.StdOut;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Monali L on 7/3/2020
@@ -95,14 +94,21 @@ public class BaseballElimination {
         return g[teams.get(team1)][teams.get(team2)];
     }
 
+    private List<String> eliminationCertTeams;
+
     // is given team eliminated?
     public boolean isEliminated(String team) {
+
+        eliminationCertTeams = new ArrayList<String>();
 
         // trivial elimination
         int index = teams.get(team);
         for (int i = 0; i < teams.size(); i++) {
             if (i == index) continue;
-            if (w[index] + r[index] < w[i]) return true;
+            if (w[index] + r[index] < w[i]) {
+                eliminationCertTeams.add(String.valueOf(i));
+                return true;
+            }
         }
 
         // non trivial elimination
@@ -125,7 +131,7 @@ public class BaseballElimination {
         // START
 
         // total graph vertices = source + total game vertices + team vertices + sink
-        int size = 1 + getComb(teams.size()-1, 2) + (teams.size()-1) + 1;
+        int size = 1 + getComb(teams.size()-1) + (teams.size()-1) + 1;
 
         source = 0;
         sink = size - 1;
@@ -151,12 +157,11 @@ public class BaseballElimination {
         }
 
         for (int i = 0; i < g.length; i++) { // team vertices
+            if (i == teams.get(team)) continue;
             indexMap.put(String.valueOf(i), graphIndex++);
         }
 
         indexMap.put("sink", graphIndex); // sink vertex
-
-        //if (graphIndex >= size) throw new IllegalStateException();
 
         // Initialize capacities
 
@@ -178,8 +183,8 @@ public class BaseballElimination {
             if (i == teams.get(team)) continue;
             for (int j = i+1; j < g[i].length; j++) {
                 if (j == teams.get(team)) continue;
-                capacity[indexMap.get(i + "-" + j)][i] = -1;
-                capacity[indexMap.get(i + "-" + j)][j] = -1;
+                capacity[indexMap.get(i + "-" + j)][indexMap.get(String.valueOf(i))] = Integer.MAX_VALUE;
+                capacity[indexMap.get(i + "-" + j)][indexMap.get(String.valueOf(j))] = Integer.MAX_VALUE;
             }
         }
 
@@ -198,6 +203,9 @@ public class BaseballElimination {
 
         // END
         int maxFlow = edk(vertices, capacity, flow, source, sink);
+
+        if (maxFlow == 0) return false;
+
         System.out.println("Maxflow - " + maxFlow);
 
         // check flow from source to game vertices
@@ -205,15 +213,18 @@ public class BaseballElimination {
             if (i == teams.get(team)) continue;
             for (int j = i+1; j < g.length; j++) {
                 if (j == teams.get(team)) continue;
-                if (flow[source][indexMap.get(i + "-" + j)] != 0) return true;
+                if (flow[source][indexMap.get(i + "-" + j)] != 0) {
+                    eliminationCertTeams.add("TBT");
+                }
             }
         }
 
-        return false;
+        return eliminationCertTeams.size() > 0;
+        //return false;
     }
 
-    private int getComb(int n, int r) {
-        return getFact(n) / (getFact(r) * getFact(n-r));
+    private int getComb(int n) {
+        return getFact(n) / (getFact(2) * getFact(n- 2));
     }
 
     private int getFact(int n) {
@@ -248,6 +259,7 @@ public class BaseballElimination {
                  endVertex = startVertex, startVertex = parent[endVertex]) {
                 flow[startVertex][endVertex] += pathFlow;
                 flow[endVertex][startVertex] -= pathFlow;
+                capacity[startVertex][endVertex] -= pathFlow;
             }
             parent = bfs(vertices, capacity, flow, source, sink);
         }
@@ -277,30 +289,32 @@ public class BaseballElimination {
 
     // subset R of teams that eliminates given team; null if not eliminated
     public Iterable<String> certificateOfElimination(String team) {
-        return null;
+        return eliminationCertTeams;
     }
 
     public static void main(String[] args) {
 
-        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams5.txt";
+        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams4.txt";
 
         //BaseballElimination division = new BaseballElimination(args[0]);
         BaseballElimination division = new BaseballElimination(file);
 
-        System.out.println(division.isEliminated("Detroit"));
+        //System.out.println(division.isEliminated("Montreal"));
 
-        /*for (String team : division.teams()) {
+        for (String team : division.teams()) {
             if (division.isEliminated(team)) {
                 StdOut.print(team + " is eliminated by the subset R = { ");
                 for (String t : division.certificateOfElimination(team)) {
                     StdOut.print(t + " ");
                 }
                 StdOut.println("}");
+                System.out.println();
             }
             else {
                 StdOut.println(team + " is not eliminated");
+                System.out.println();
             }
-        }*/
+        }
     }
 
 }
