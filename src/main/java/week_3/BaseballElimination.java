@@ -188,10 +188,11 @@ public class BaseballElimination {
             }
         }
 
-        for (int i = 0; i < g.length; i++) {
+        for (int i = 0; i < g.length; i++) { // capacities from team vertices to sink
             if (i == teams.get(team)) continue;
             int teamIndex = indexMap.get(String.valueOf(i));
-            capacity[teamIndex][sink] = w[i] + r[i] - w[getLowestTeam()];
+            capacity[teamIndex][sink] = w[teams.get(team)] + r[teams.get(team)] - w[i];
+            //capacity[teamIndex][sink] = w[i] + r[i] - w[getLowestTeam()];
         }
 
         flow = new int[size][size]; // initialize remaining flow to be -1/null
@@ -213,7 +214,7 @@ public class BaseballElimination {
             if (i == teams.get(team)) continue;
             for (int j = i+1; j < g.length; j++) {
                 if (j == teams.get(team)) continue;
-                if (flow[source][indexMap.get(i + "-" + j)] != 0) {
+                if (capacity[source][indexMap.get(i + "-" + j)] != flow[source][indexMap.get(i + "-" + j)]) {
                     eliminationCertTeams.add("TBT");
                 }
             }
@@ -241,6 +242,30 @@ public class BaseballElimination {
 
         while (parent[sink] != -1) {
 
+            // temp prints
+            System.out.print("Flowing from  : ");
+            System.out.print(sink);
+            for (int startVertex = parent[sink], endVertex = sink;
+                 startVertex != -1;
+                 endVertex = startVertex, startVertex = parent[endVertex]) {
+                System.out.print(" <- " + startVertex);
+            }
+            System.out.println();
+            System.out.print("Current capac : ");
+            for (int startVertex = parent[sink], endVertex = sink;
+                 startVertex != -1;
+                 endVertex = startVertex, startVertex = parent[endVertex]) {
+                System.out.print((capacity[startVertex][endVertex] > 1000 ? "INF" : capacity[startVertex][endVertex]) + " | ");
+            }
+            System.out.println();
+            System.out.print("Current Flow  : ");
+            for (int startVertex = parent[sink], endVertex = sink;
+                 startVertex != -1;
+                 endVertex = startVertex, startVertex = parent[endVertex]) {
+                System.out.print(flow[startVertex][endVertex] + " | ");
+            }
+            System.out.println();
+
             int pathFlow = Integer.MAX_VALUE;
 
             // Calculate the minimum flow that can be sent on this path
@@ -259,8 +284,28 @@ public class BaseballElimination {
                  endVertex = startVertex, startVertex = parent[endVertex]) {
                 flow[startVertex][endVertex] += pathFlow;
                 flow[endVertex][startVertex] -= pathFlow;
-                capacity[startVertex][endVertex] -= pathFlow;
+                //capacity[startVertex][endVertex] -= pathFlow;
             }
+
+            System.out.println("PathFlow: " + pathFlow);
+
+            // temp prints
+            System.out.print("Updated Flow  : ");
+            for (int startVertex = parent[sink], endVertex = sink;
+                 startVertex != -1;
+                 endVertex = startVertex, startVertex = parent[endVertex]) {
+                System.out.print(flow[startVertex][endVertex] + " | ");
+            }
+            System.out.println();
+            System.out.print("Cap Remaining : ");
+            for (int startVertex = parent[sink], endVertex = sink;
+                 startVertex != -1;
+                 endVertex = startVertex, startVertex = parent[endVertex]) {
+                System.out.print((capacity[startVertex][endVertex] > 1000 ? "INF" : capacity[startVertex][endVertex]) + " | ");
+            }
+            System.out.println();
+            System.out.println();
+
             parent = bfs(vertices, capacity, flow, source, sink);
         }
 
@@ -299,7 +344,7 @@ public class BaseballElimination {
         //BaseballElimination division = new BaseballElimination(args[0]);
         BaseballElimination division = new BaseballElimination(file);
 
-        //System.out.println(division.isEliminated("Montreal"));
+        //System.out.println(division.isEliminated("Boston") ? "Eliminated" : " Not eliminated");
 
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
