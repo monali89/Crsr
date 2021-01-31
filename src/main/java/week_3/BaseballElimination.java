@@ -106,12 +106,14 @@ public class BaseballElimination {
         for (int i = 0; i < teams.size(); i++) {
             if (i == index) continue;
             if (w[index] + r[index] < w[i]) {
+                System.out.println("Trivial Elimination");
                 eliminationCertTeams.add(String.valueOf(i));
                 return true;
             }
         }
 
         // non trivial elimination
+        System.out.println("Nontrivial Elimination");
 
         // create a flow network without given team
 
@@ -215,7 +217,7 @@ public class BaseballElimination {
             for (int j = i+1; j < g.length; j++) {
                 if (j == teams.get(team)) continue;
                 if (capacity[source][indexMap.get(i + "-" + j)] != flow[source][indexMap.get(i + "-" + j)]) {
-                    eliminationCertTeams.add("TBT");
+                    eliminationCertTeams.add(i + "-" + j);
                 }
             }
         }
@@ -251,13 +253,6 @@ public class BaseballElimination {
                 System.out.print(" <- " + startVertex);
             }
             System.out.println();
-            System.out.print("Current capac : ");
-            for (int startVertex = parent[sink], endVertex = sink;
-                 startVertex != -1;
-                 endVertex = startVertex, startVertex = parent[endVertex]) {
-                System.out.print((capacity[startVertex][endVertex] > 1000 ? "INF" : capacity[startVertex][endVertex]) + " | ");
-            }
-            System.out.println();
             System.out.print("Current Flow  : ");
             for (int startVertex = parent[sink], endVertex = sink;
                  startVertex != -1;
@@ -284,7 +279,6 @@ public class BaseballElimination {
                  endVertex = startVertex, startVertex = parent[endVertex]) {
                 flow[startVertex][endVertex] += pathFlow;
                 flow[endVertex][startVertex] -= pathFlow;
-                //capacity[startVertex][endVertex] -= pathFlow;
             }
 
             System.out.println("PathFlow: " + pathFlow);
@@ -295,13 +289,6 @@ public class BaseballElimination {
                  startVertex != -1;
                  endVertex = startVertex, startVertex = parent[endVertex]) {
                 System.out.print(flow[startVertex][endVertex] + " | ");
-            }
-            System.out.println();
-            System.out.print("Cap Remaining : ");
-            for (int startVertex = parent[sink], endVertex = sink;
-                 startVertex != -1;
-                 endVertex = startVertex, startVertex = parent[endVertex]) {
-                System.out.print((capacity[startVertex][endVertex] > 1000 ? "INF" : capacity[startVertex][endVertex]) + " | ");
             }
             System.out.println();
             System.out.println();
