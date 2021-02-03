@@ -1,6 +1,7 @@
 package week_3;
 
 import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.io.BufferedReader;
@@ -222,6 +223,8 @@ public class BaseballElimination {
             }
         }
 
+        getMinCut(vertices, capacity, flow, source, sink);
+
         return eliminationCertTeams.size() > 0;
         //return false;
     }
@@ -245,7 +248,7 @@ public class BaseballElimination {
         while (parent[sink] != -1) {
 
             // temp prints
-            System.out.print("Flowing from  : ");
+            /*System.out.print("Flowing from  : ");
             System.out.print(sink);
             for (int startVertex = parent[sink], endVertex = sink;
                  startVertex != -1;
@@ -259,7 +262,7 @@ public class BaseballElimination {
                  endVertex = startVertex, startVertex = parent[endVertex]) {
                 System.out.print(flow[startVertex][endVertex] + " | ");
             }
-            System.out.println();
+            System.out.println();*/
 
             int pathFlow = Integer.MAX_VALUE;
 
@@ -281,17 +284,17 @@ public class BaseballElimination {
                 flow[endVertex][startVertex] -= pathFlow;
             }
 
-            System.out.println("PathFlow: " + pathFlow);
+            //System.out.println("PathFlow: " + pathFlow);
 
             // temp prints
-            System.out.print("Updated Flow  : ");
+            /*System.out.print("Updated Flow  : ");
             for (int startVertex = parent[sink], endVertex = sink;
                  startVertex != -1;
                  endVertex = startVertex, startVertex = parent[endVertex]) {
                 System.out.print(flow[startVertex][endVertex] + " | ");
             }
             System.out.println();
-            System.out.println();
+            System.out.println();*/
 
             parent = bfs(vertices, capacity, flow, source, sink);
         }
@@ -323,6 +326,76 @@ public class BaseballElimination {
     public Iterable<String> certificateOfElimination(String team) {
         return eliminationCertTeams;
     }
+
+    private void getMinCut(int[] vertices, int[][] capacity, int[][] flow, int source, int sink) {
+
+        int[][] residual = new int[vertices.length][vertices.length];
+        List<Integer> temp = new ArrayList<Integer>();
+
+        for (int i = 0; i < residual.length; i++) {
+            for (int j = 0; j < residual.length; j++) {
+                residual[i][j] = capacity[i][j] - flow[i][j];
+            }
+        }
+
+        //int[] pred = new int[vertices.length];
+        boolean[] isVisited = new boolean[vertices.length];
+        //Arrays.fill(pred, -1);
+
+        Stack<Integer> stack = new Stack<Integer>();
+        stack.push(source);
+        isVisited[source] = true;
+
+        while (!stack.isEmpty()) {
+            int v = stack.pop();
+            for (int i = 0; i < residual.length; i++) {
+                if (residual[v][i] > 0 && !isVisited[i]) {
+                    stack.push(i);
+                    temp.add(i);
+                    //pred[i] = v;
+                    isVisited[i] = true;
+                }
+            }
+        }
+
+        /*Queue<Integer> queue = new Queue<Integer>();
+        queue.enqueue(source);
+
+        while (!queue.isEmpty()) {
+            int v = queue.dequeue();
+            for (int i = 0; i < capacity[v].length; i++) {
+                if (residual[v][i] == -1) continue;
+                if (pred[i] == -1 && residual[v][i] > 0) {
+                    pred[i] = v;
+                    queue.enqueue(i);
+                }
+            }
+        }*/
+
+        System.out.println("Residual Graph");
+        for (int i = 0; i < capacity.length; i++) {
+            for (int j = 0; j < capacity.length; j++) {
+                System.out.print(residual[i][j] + " ");
+            }
+            System.out.println();
+        }
+
+        /*System.out.println("BFS on residual graph");
+        for (int i = 0; i < pred.length; i++) {
+            System.out.print(pred[i] + " ");
+        }
+        System.out.println();*/
+
+        /*for (int startVertex = pred[sink], endVertex = sink;
+             startVertex != -1;
+             endVertex = startVertex, startVertex = pred[endVertex]) {
+            temp.add(startVertex);
+        }*/
+
+        System.out.println("certificateOfElimination - " + temp);
+
+    }
+
 
     public static void main(String[] args) {
 
