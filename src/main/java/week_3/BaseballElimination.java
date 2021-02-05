@@ -98,38 +98,38 @@ public class BaseballElimination {
             if (i == index) continue;
             if (w[index] + r[index] < w[i]) {
                 System.out.println("Trivial Elimination");
-                eliminationCertTeams.add(String.valueOf(i));
+                eliminationCertTeams.add(reverseTeams.get(i));
                 return true;
             }
         }
 
         // non trivial elimination
-        System.out.println("Nontrivial Elimination");
 
-        // create a flow network without given team
-        CreateGraph(team);
+        CreateGraph(team); // create a flow network without given team
 
-        int maxFlow = edk(capacity, flow, source, sink);
+        int maxFlow = edk(); // run edmonds karp algorithm to get maxflow path
 
         if (maxFlow == 0) return false;
 
+        System.out.println("Non trivial elimination");
         System.out.println("Maxflow - " + maxFlow);
 
-        // check flow from source to game vertices
+        // if some edges are not full, this team cannot win and is eliminated
+        boolean isEliminated = false;
         for (int i = 0; i < g.length; i++) {
             if (i == teams.get(team)) continue;
             for (int j = i+1; j < g.length; j++) {
                 if (j == teams.get(team)) continue;
                 if (capacity[source][teamToGraphIndex.get(i + "-" + j)] != flow[source][teamToGraphIndex.get(i + "-" + j)]) {
-                    eliminationCertTeams.add(i + "-" + j);
+                    isEliminated = true;
+                    break;
                 }
             }
         }
 
-        getMinCut(capacity, flow, source, sink);
+        if(isEliminated) getMinCut(); // get min cut to figure out elimination certificate
 
-        return eliminationCertTeams.size() > 0;
-        //return false;
+        return isEliminated;
     }
 
     // Graph representation
@@ -221,9 +221,9 @@ public class BaseballElimination {
         return fact;
     }
 
-    private int edk(int[][] capacity, int[][] flow, int source, int sink) {
+    private int edk() {
         int maxFlow = 0;
-        int[] parent = bfs( capacity, flow, source, sink);
+        int[] parent = bfs();
 
         while (parent[sink] != -1) {
             int pathFlow = Integer.MAX_VALUE;
@@ -246,12 +246,12 @@ public class BaseballElimination {
                 flow[endVertex][startVertex] -= pathFlow;
             }
 
-            parent = bfs(capacity, flow, source, sink);
+            parent = bfs();
         }
         return maxFlow;
     }
 
-    private int[] bfs(int[][] capacity, int[][] flow, int source, int sink) {
+    private int[] bfs() {
         int[] pred = new int[capacity.length];
         Arrays.fill(pred, -1);
 
@@ -276,7 +276,7 @@ public class BaseballElimination {
         return eliminationCertTeams;
     }
 
-    private void getMinCut(int[][] capacity, int[][] flow, int source, int sink) {
+    private void getMinCut() {
 
         int[][] residual = new int[capacity.length][capacity.length];
 
@@ -286,7 +286,6 @@ public class BaseballElimination {
             }
         }
 
-        Set<String> certificateOfEliminationTeams = new HashSet<String>();
         boolean[] isVisited = new boolean[capacity.length];
         Stack<Integer> stack = new Stack<Integer>();
         stack.push(source);
@@ -298,14 +297,15 @@ public class BaseballElimination {
                 if (residual[v][i] > 0 && !isVisited[i]) {
                     stack.push(i);
                     String[] tempTeams = graphToTeamIndex.get(i).split("-");
-                    for (int j = 0; j < tempTeams.length; j++) {
-                        certificateOfEliminationTeams.add(reverseTeams.get(Integer.parseInt(tempTeams[j])));
+                    for (String tempTeam : tempTeams) {
+                        if (!eliminationCertTeams.contains(reverseTeams.get(Integer.parseInt(tempTeam)))) {
+                            eliminationCertTeams.add(reverseTeams.get(Integer.parseInt(tempTeam)));
+                        }
                     }
                     isVisited[i] = true;
                 }
             }
         }
-        System.out.println("certificateOfElimination - " + certificateOfEliminationTeams);
     }
 
 
