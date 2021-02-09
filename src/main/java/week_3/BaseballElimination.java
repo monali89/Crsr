@@ -1,8 +1,8 @@
 package week_3;
 
+import edu.princeton.cs.algs4.FlowEdge;
 import edu.princeton.cs.algs4.FlowNetwork;
 import edu.princeton.cs.algs4.FordFulkerson;
-import edu.princeton.cs.algs4.FlowEdge;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.io.BufferedReader;
@@ -228,6 +228,7 @@ public class BaseballElimination {
 
     // subset R of teams that eliminates given team; null if not eliminated
     public Iterable<String> certificateOfElimination(String team) {
+        if (eliminationCertTeams.size() > 0) return eliminationCertTeams;
         eliminationCertTeams = new ArrayList<String>();
         for (int i = 0; i < g.length; i++) {
             if (i == strToIntTeams.get(team)) continue; // skip if given team node
@@ -245,7 +246,8 @@ public class BaseballElimination {
         // BaseballElimination division = new BaseballElimination(args[0]);
         BaseballElimination division = new BaseballElimination(file);
 
-        // System.out.println(division.isEliminated("Boston") ? "Eliminated" : " Not eliminated");
+        // System.out.print(division.isEliminated("Houston") ? "Eliminated" : " Not eliminated");
+        // System.out.println(" by subset " + division.certificateOfElimination("Houston"));
 
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
