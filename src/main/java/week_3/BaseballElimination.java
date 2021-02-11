@@ -30,7 +30,6 @@ public class BaseballElimination {
     private Map<String, Integer> strToIntTeams;
 
     // FlowNetwork's vertex to input node mapping
-    private Map<Integer, String> intToStrNode;
     private Map<String, Integer> strToIntNode;
 
     // Custom flow network for running the algo
@@ -40,6 +39,9 @@ public class BaseballElimination {
     // Additional things required
     private int source;
     private int sink;
+
+    private boolean isEliminated;
+    private List<String> eliminationCertTeams;
 
     // create a baseball division from given filename in format specified below
     public BaseballElimination(String filename) {
@@ -69,6 +71,7 @@ public class BaseballElimination {
                     g[i][j] = Integer.parseInt(arr[j+4]);
                 }
             }
+            isEliminated = false;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -106,8 +109,6 @@ public class BaseballElimination {
         return g[strToIntTeams.get(team1)][strToIntTeams.get(team2)];
     }
 
-    private List<String> eliminationCertTeams;
-
     // is given team eliminated?
     public boolean isEliminated(String team) {
 
@@ -118,9 +119,9 @@ public class BaseballElimination {
         for (int i = 0; i < w.length; i++) {
             if (i == index) continue;
             if (w[index] + r[index] < w[i]) {
-                // System.out.println("Trivial Elimination");
+                isEliminated = true;
                 eliminationCertTeams.add(intToStrsTeams.get(i));
-                return true;
+                return isEliminated;
             }
         }
 
@@ -130,16 +131,7 @@ public class BaseballElimination {
         fillFlowNetwork(team);
         fordFulkerson = new FordFulkerson(flowNetwork, source, sink);
 
-        // run edmonds karp algorithm to get maxflow path
-        // double maxFlow = fordFulkerson.value();
-
-        // if (maxFlow == 0) return false;
-
-        // System.out.println("Non trivial elimination");
-        // System.out.println("MaxFlow - " + fordFulkerson.value());
-
         // if some edges are not full, this team cannot win and is eliminated
-        boolean isEliminated = false;
         Iterable<FlowEdge> sourceToGameEdges = flowNetwork.adj(source);
         for (FlowEdge edge: sourceToGameEdges) {
             if (edge.capacity() != edge.flow()) {
@@ -160,11 +152,8 @@ public class BaseballElimination {
 
         flowNetwork = new FlowNetwork(size);
 
-        intToStrNode = new HashMap<Integer, String>();
         strToIntNode = new HashMap<String, Integer>();
 
-        intToStrNode.put(source, "source");
-        intToStrNode.put(sink, "sink");
         strToIntNode.put("source", source);
         strToIntNode.put("sink", sink);
 
@@ -174,7 +163,6 @@ public class BaseballElimination {
             if (i == strToIntTeams.get(team)) continue;
             for (int j = i+1; j < g[i].length; j++) {
                 if (j == strToIntTeams.get(team)) continue;
-                intToStrNode.put(graphIndex, i + "-" + j);
                 strToIntNode.put(i + "-" + j, graphIndex);
                 graphIndex++;
             }
@@ -182,7 +170,6 @@ public class BaseballElimination {
 
         for (int i = 0; i < g.length; i++) { // team vertices
             if (i == strToIntTeams.get(team)) continue;
-            intToStrNode.put(graphIndex, String.valueOf(i));
             strToIntNode.put(String.valueOf(i), graphIndex);
             graphIndex++;
         }
@@ -215,19 +202,14 @@ public class BaseballElimination {
     }
 
     private int getComb(int n) {
-        return getFact(n) / (getFact(2) * getFact(n- 2));
-    }
-
-    private int getFact(int n) {
-        int fact = 1;
-        for (int i = 2; i <= n; i++) {
-            fact = fact * i;
-        }
-        return fact;
+        return (((n-1)*n)/2);
     }
 
     // subset R of teams that eliminates given team; null if not eliminated
     public Iterable<String> certificateOfElimination(String team) {
+
+        if (!isEliminated) return null;
+
         if (eliminationCertTeams.size() > 0) return eliminationCertTeams;
         eliminationCertTeams = new ArrayList<String>();
         for (int i = 0; i < g.length; i++) {
@@ -241,7 +223,7 @@ public class BaseballElimination {
 
     public static void main(String[] args) {
 
-        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams5.txt";
+        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams4.txt";
 
         // BaseballElimination division = new BaseballElimination(args[0]);
         BaseballElimination division = new BaseballElimination(file);
