@@ -98,7 +98,7 @@ public class BaseballElimination {
 
     // number of remaining games for given team
     public int remaining(String team) {
-        return w[strToIntTeams.get(team)];
+        return r[strToIntTeams.get(team)];
     }
 
     // number of remaining games between team1 and team2
@@ -131,12 +131,12 @@ public class BaseballElimination {
         fordFulkerson = new FordFulkerson(flowNetwork, source, sink);
 
         // run edmonds karp algorithm to get maxflow path
-        double maxFlow = fordFulkerson.value();
+        // double maxFlow = fordFulkerson.value();
 
-        if (maxFlow == 0) return false;
+        // if (maxFlow == 0) return false;
 
-        System.out.println("Non trivial elimination");
-        System.out.println("MaxFlow - " + fordFulkerson.value());
+        // System.out.println("Non trivial elimination");
+        // System.out.println("MaxFlow - " + fordFulkerson.value());
 
         // if some edges are not full, this team cannot win and is eliminated
         boolean isEliminated = false;
@@ -199,9 +199,9 @@ public class BaseballElimination {
 
                 // from game vertex to team vertex
                 FlowEdge gameToTeamVertex;
-                gameToTeamVertex = new FlowEdge(strToIntNode.get(i + "-" + j), i, Double.POSITIVE_INFINITY);
+                gameToTeamVertex = new FlowEdge(strToIntNode.get(i + "-" + j), strToIntNode.get(String.valueOf(i)), Double.POSITIVE_INFINITY);
                 flowNetwork.addEdge(gameToTeamVertex);
-                gameToTeamVertex = new FlowEdge(strToIntNode.get(i + "-" + j), j, Double.POSITIVE_INFINITY);
+                gameToTeamVertex = new FlowEdge(strToIntNode.get(i + "-" + j), strToIntNode.get(String.valueOf(j)), Double.POSITIVE_INFINITY);
                 flowNetwork.addEdge(gameToTeamVertex);
 
             }
@@ -241,13 +241,13 @@ public class BaseballElimination {
 
     public static void main(String[] args) {
 
-        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams10.txt";
+        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams5.txt";
 
         // BaseballElimination division = new BaseballElimination(args[0]);
         BaseballElimination division = new BaseballElimination(file);
 
-        // System.out.print(division.isEliminated("Houston") ? "Eliminated" : " Not eliminated");
-        // System.out.println(" by subset " + division.certificateOfElimination("Houston"));
+        // System.out.print(division.isEliminated("Philadelphia") ? "Eliminated" : " Not eliminated");
+        // System.out.println(" by subset " + division.certificateOfElimination("Philadelphia"));
 
         for (String team : division.teams()) {
             if (division.isEliminated(team)) {
