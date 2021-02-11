@@ -71,7 +71,6 @@ public class BaseballElimination {
                     g[i][j] = Integer.parseInt(arr[j+4]);
                 }
             }
-            isEliminated = false;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -113,6 +112,7 @@ public class BaseballElimination {
     public boolean isEliminated(String team) {
 
         eliminationCertTeams = new ArrayList<String>();
+        isEliminated = false;
 
         // trivial elimination
         int index = strToIntTeams.get(team);
@@ -207,9 +207,7 @@ public class BaseballElimination {
 
     // subset R of teams that eliminates given team; null if not eliminated
     public Iterable<String> certificateOfElimination(String team) {
-
         if (!isEliminated) return null;
-
         if (eliminationCertTeams.size() > 0) return eliminationCertTeams;
         eliminationCertTeams = new ArrayList<String>();
         for (int i = 0; i < g.length; i++) {
@@ -223,7 +221,7 @@ public class BaseballElimination {
 
     public static void main(String[] args) {
 
-        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams4.txt";
+        String file = "C:\\Users\\monal\\IdeaProjects\\Coursera\\src\\main\\resources\\week_3\\teams30.txt";
 
         // BaseballElimination division = new BaseballElimination(args[0]);
         BaseballElimination division = new BaseballElimination(file);
