@@ -35,7 +35,6 @@ public class MoveToFront {
 
     // apply move-to-front decoding, reading from standard input and writing to standard output
     public static void decode() {
-        System.out.println("Decode");
         char[] mtf = new char[256];
         for (int i = 0; i < mtf.length; i++) {
             mtf[i] = (char) i;
@@ -45,7 +44,6 @@ public class MoveToFront {
             int idx = BinaryStdIn.readChar(8);
             char c = mtf[idx];
             BinaryStdOut.write(mtf[idx], 8);
-            // System.out.println(idx + " "  + c);
 
             // move this char to the front
             for (int i = c; i > 0; i--) mtf[i] = mtf[i-1];
