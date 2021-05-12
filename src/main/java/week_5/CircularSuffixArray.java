@@ -10,18 +10,19 @@ public class CircularSuffixArray {
 
     private List<String> originalSuffixes = new ArrayList<String>();
     private List<String> sortedSuffixes = new ArrayList<String>();
-    private char START = 256;
-    private char END = 257;
+    private String inputString;
 
     // circular suffix array of s
     public CircularSuffixArray(String s) {
+
+        inputString = s;
 
         // s = START + s + END;
         originalSuffixes = new ArrayList<>();
 
         // create a table, where the rows are all possible rotations of s
-        for (int i = 0; i < s.length(); i++) {
-            String leftRotated = s.substring(i) + s.substring(0, i);
+        for (int i = 0; i < inputString.length(); i++) {
+            String leftRotated = inputString.substring(i) + inputString.substring(0, i);
             originalSuffixes.add(leftRotated);
         }
 
@@ -31,7 +32,7 @@ public class CircularSuffixArray {
     }
 
     // length of s
-    public int length() {return -1;}
+    public int length() {return inputString.length();}
 
     // returns index of ith sorted suffix
     public int index(int i) {
@@ -43,6 +44,7 @@ public class CircularSuffixArray {
     public static void main(String[] args) {
         String input = "ABRACADABRA!";
         CircularSuffixArray obj = new CircularSuffixArray(input);
+        System.out.println("Length - " + obj.length());
         for (int i = 0; i < input.length(); i++) {
             System.out.println(i + " - " + obj.index(i));
         }

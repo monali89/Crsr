@@ -1,5 +1,8 @@
 package week_5;
 
+import edu.princeton.cs.algs4.BinaryStdIn;
+import edu.princeton.cs.algs4.BinaryStdOut;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,12 +11,11 @@ import java.util.List;
  */
 public class BurrowsWheeler {
 
-    private static int first;
-    private static String inputString;
-
     // apply Burrows-Wheeler transform,
     // reading from standard input and writing to standard output
     public static void transform() {
+        int first = -1;
+        String inputString = BinaryStdIn.readString();
         List<String> originalSuffixes = new ArrayList<String>();
 
         // create a table, where the rows are all possible rotations of s
@@ -34,13 +36,19 @@ public class BurrowsWheeler {
             if (st.equals(inputString)) first = i;
         }
 
-        System.out.println(first);
-        System.out.println(sb);
+        BinaryStdOut.write(first, 8*4);
+        for (int i = 0; i < sb.length(); i++) {
+            BinaryStdOut.write(sb.charAt(i), 8);
+        }
+        BinaryStdOut.close();
     }
 
     // apply Burrows-Wheeler inverse transform,
     // reading from standard input and writing to standard output
     public static void inverseTransform() {
+        int first = BinaryStdIn.readInt();
+        String inputString = BinaryStdIn.readString();
+
         List<String> sortedSuffixes = new ArrayList<>();
 
         for (int i = 0; i < inputString.length(); i++) {
@@ -62,19 +70,8 @@ public class BurrowsWheeler {
     public static void main(String[] args) {
 
         if (args[0].equals("-")) {
-            // try {
-                //BufferedReader bf = new BufferedReader(new FileReader(args[1]));
-                inputString = args[1]; // bf.readLine();
-                transform();
-            /*} catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
+            transform();
         } else if (args[0].equals("+")) {
-            // Scanner in = new Scanner(System.in);
-            first = Integer.valueOf(args[1]); // in.nextInt();
-            inputString = args[2]; // in.next();
             inverseTransform();
         }
     }
