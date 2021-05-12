@@ -9,9 +9,11 @@ import edu.princeton.cs.algs4.BinaryStdOut;
 
 public class MoveToFront {
 
+    private static int ASCII_RANGE = 255;
+
     // apply move-to-front encoding, reading from standard input and writing to standard output
     public static void encode() {
-        char[] mtf = new char[256];
+        char[] mtf = new char[ASCII_RANGE];
         for (int i = 0; i < mtf.length; i++) {
             mtf[i] = (char) i;
         }
@@ -35,7 +37,7 @@ public class MoveToFront {
 
     // apply move-to-front decoding, reading from standard input and writing to standard output
     public static void decode() {
-        char[] mtf = new char[256];
+        char[] mtf = new char[ASCII_RANGE];
         for (int i = 0; i < mtf.length; i++) {
             mtf[i] = (char) i;
         }
@@ -50,7 +52,6 @@ public class MoveToFront {
             mtf[0] = c;
         }
         BinaryStdOut.close();
-
     }
 
     // if args[0] is "-", apply move-to-front encoding
@@ -61,23 +62,5 @@ public class MoveToFront {
         } else if (args[0].equals("+")) {
             decode();
         }
-
-        /*while (!BinaryStdIn.isEmpty()) {
-            char c = BinaryStdIn.readChar(8);
-            BinaryStdOut.write(c);
-        }
-        BinaryStdOut.close();*/
-
-        /*boolean bit = false;
-        while (!BinaryStdIn.isEmpty())
-        {
-            int run = BinaryStdIn.readInt(8);
-            for (int i = 0; i < run; i++)
-                BinaryStdOut.write(bit);
-            bit = !bit;
-        }
-        BinaryStdOut.close();*/
-
     }
-
 }
