@@ -24,10 +24,12 @@ public class BurrowsWheeler {
             originalSuffixes.add(leftRotated);
         }
 
-        // sort rows alphabetically
-        List<String> sortedSuffixes = new ArrayList<>(originalSuffixes);
-        sortedSuffixes.sort(String::compareTo);
+        List<String> sortedSuffixes = new ArrayList<>();
+        CircularSuffixArray csa = new CircularSuffixArray(inputString);
 
+        for (int i = 0; i < inputString.length(); i++) {
+            sortedSuffixes.add(i, originalSuffixes.get(csa.index(i)));
+        }
         // return (last column of the table)
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < sortedSuffixes.size(); i++) {
@@ -68,7 +70,6 @@ public class BurrowsWheeler {
     // if args[0] is "-", apply Burrows-Wheeler transform
     // if args[0] is "+", apply Burrows-Wheeler inverse transform
     public static void main(String[] args) {
-
         if (args[0].equals("-")) {
             transform();
         } else if (args[0].equals("+")) {
