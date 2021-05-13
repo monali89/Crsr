@@ -15,33 +15,30 @@ public class BurrowsWheeler {
     // reading from standard input and writing to standard output
     public static void transform() {
         int first = -1;
-        String inputString = BinaryStdIn.readString();
-        List<String> originalSuffixes = new ArrayList<String>();
+        String inputString = "";
+        while (!BinaryStdIn.isEmpty()) {
+            char c = BinaryStdIn.readChar(8);
+            inputString = inputString.concat(String.valueOf(c));
+        }
 
-        // create a table, where the rows are all possible rotations of s
+        String[] originalSuffixes = new String[inputString.length()];
         for (int i = 0; i < inputString.length(); i++) {
             String leftRotated = inputString.substring(i) + inputString.substring(0, i);
-            originalSuffixes.add(leftRotated);
+            originalSuffixes[i] = leftRotated;
         }
 
-        List<String> sortedSuffixes = new ArrayList<>();
         CircularSuffixArray csa = new CircularSuffixArray(inputString);
 
+        String outputString = "";
         for (int i = 0; i < inputString.length(); i++) {
-            sortedSuffixes.add(i, originalSuffixes.get(csa.index(i)));
+            int idx = csa.index(i);
+            if (idx == 0) {
+                BinaryStdOut.write(i, 8*4);
+            }
+            char last = originalSuffixes[idx].charAt(inputString.length()-1);
+            outputString = outputString.concat(String.valueOf(last));
         }
-        // return (last column of the table)
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < sortedSuffixes.size(); i++) {
-            String st = sortedSuffixes.get(i);
-            sb.append(st.charAt(st.length() - 1));
-            if (st.equals(inputString)) first = i;
-        }
-
-        BinaryStdOut.write(first, 8*4);
-        for (int i = 0; i < sb.length(); i++) {
-            BinaryStdOut.write(sb.charAt(i), 8);
-        }
+        BinaryStdOut.write(outputString);
         BinaryStdOut.close();
     }
 
