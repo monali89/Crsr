@@ -3,8 +3,7 @@ package week_5;
 import edu.princeton.cs.algs4.BinaryStdIn;
 import edu.princeton.cs.algs4.BinaryStdOut;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * @author Monali L on 3/9/2021
@@ -46,22 +45,31 @@ public class BurrowsWheeler {
     // reading from standard input and writing to standard output
     public static void inverseTransform() {
         int first = BinaryStdIn.readInt();
-        String inputString = BinaryStdIn.readString();
+        char[] t = BinaryStdIn.readString().toCharArray();
+        char[] firstCol = Arrays.copyOf(t, t.length);
+        Arrays.sort(firstCol);
 
-        List<String> sortedSuffixes = new ArrayList<>();
+        int[] next = new int[t.length];
+        Arrays.fill(next, -1);
+        next[0] = first;
 
-        for (int i = 0; i < inputString.length(); i++) {
-            sortedSuffixes.add(i, "");
-        }
-
-        for (int i = 0; i < inputString.length(); i++) {
-            for (int j = 0; j < inputString.length(); j++) {
-                sortedSuffixes.set(j, inputString.charAt(j) + sortedSuffixes.get(j));
+        for (int i = 0; i < t.length; i++) {
+            for (int j = 1; j < firstCol.length; j++) {
+                if (t[i] == firstCol[j] && next[j] == -1) {
+                    next[j] = i;
+                    break;
+                }
             }
-            sortedSuffixes.sort(String::compareTo);
         }
 
-        System.out.println(sortedSuffixes.get(first));
+        int i = first;
+        int ctr = 0;
+        while (i < next.length && ctr < next.length) {
+            BinaryStdOut.write(firstCol[i], 8);
+            i = next[i];
+            ctr++;
+        }
+        BinaryStdOut.close();
     }
 
     // if args[0] is "-", apply Burrows-Wheeler transform
