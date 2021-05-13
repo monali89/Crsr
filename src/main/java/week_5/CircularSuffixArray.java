@@ -9,9 +9,9 @@ import java.util.List;
 
 public class CircularSuffixArray {
 
-    private List<String> originalSuffixes = new ArrayList<String>();
-    private List<String> sortedSuffixes = new ArrayList<String>();
-    private String inputString = "";
+    private static List<String> originalSuffixes = new ArrayList<String>();
+    private static List<String> sortedSuffixes = new ArrayList<String>();
+    private static String inputString = "";
 
     // circular suffix array of s
     public CircularSuffixArray(String s) {
@@ -37,14 +37,13 @@ public class CircularSuffixArray {
 
     // returns index of ith sorted suffix
     public int index(int i) {
-        if (i < 0 || i >= inputString.length()) throw new IllegalArgumentException();
+        if (i < 0 || i > inputString.length()) throw new IllegalArgumentException();
         return originalSuffixes.indexOf(sortedSuffixes.get(i));
     }
 
     // unit testing (required)
     public static void main(String[] args) {
         String input = "ABRACADABRA!";
-        input = "ABAB";
         CircularSuffixArray obj = new CircularSuffixArray(input);
         System.out.println("Length - " + obj.length());
         for (int i = 0; i < input.length(); i++) {

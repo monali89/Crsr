@@ -13,6 +13,7 @@ public class BurrowsWheeler {
     // apply Burrows-Wheeler transform,
     // reading from standard input and writing to standard output
     public static void transform() {
+        int first = -1;
         String inputString = "";
         while (!BinaryStdIn.isEmpty()) {
             char c = BinaryStdIn.readChar(8);
@@ -31,7 +32,7 @@ public class BurrowsWheeler {
         for (int i = 0; i < inputString.length(); i++) {
             int idx = csa.index(i);
             if (idx == 0) {
-                BinaryStdOut.write(i, 32);
+                BinaryStdOut.write(i, 8*4);
             }
             char last = originalSuffixes[idx].charAt(inputString.length()-1);
             outputString = outputString.concat(String.valueOf(last));

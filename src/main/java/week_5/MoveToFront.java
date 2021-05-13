@@ -9,7 +9,7 @@ import edu.princeton.cs.algs4.BinaryStdOut;
 
 public class MoveToFront {
 
-    private static final int ASCII_RANGE = 255;
+    private static int ASCII_RANGE = 255;
 
     // apply move-to-front encoding, reading from standard input and writing to standard output
     public static void encode() {
