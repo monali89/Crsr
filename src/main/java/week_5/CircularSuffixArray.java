@@ -37,7 +37,7 @@ public class CircularSuffixArray {
 
     // returns index of ith sorted suffix
     public int index(int i) {
-        if (i < 0 || i > inputString.length()) throw new IllegalArgumentException();
+        if (i < 0 || i >= inputString.length()) throw new IllegalArgumentException();
         return originalSuffixes.indexOf(sortedSuffixes.get(i));
     }
 

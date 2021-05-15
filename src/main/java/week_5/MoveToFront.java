@@ -9,10 +9,11 @@ import edu.princeton.cs.algs4.BinaryStdOut;
 
 public class MoveToFront {
 
-    private static int ASCII_RANGE = 255;
+    private final static int ASCII_RANGE = 256;
 
     // apply move-to-front encoding, reading from standard input and writing to standard output
     public static void encode() {
+
         char[] mtf = new char[ASCII_RANGE];
         for (int i = 0; i < mtf.length; i++) {
             mtf[i] = (char) i;
@@ -24,19 +25,19 @@ public class MoveToFront {
             // find char in mtf
             int idx = 0;
             while (idx < mtf.length && mtf[idx] != c) idx++;
-            // System.out.print(idx + " ");
+
+            BinaryStdOut.write(idx, 8);
 
             // push char to front and left rotate array
             for (int i = idx; i > 0; i--) mtf[i] = mtf[i-1];
             mtf[0] = c;
-
-            BinaryStdOut.write(idx, 8);
         }
         BinaryStdOut.close();
     }
 
     // apply move-to-front decoding, reading from standard input and writing to standard output
     public static void decode() {
+
         char[] mtf = new char[ASCII_RANGE];
         for (int i = 0; i < mtf.length; i++) {
             mtf[i] = (char) i;
@@ -45,10 +46,11 @@ public class MoveToFront {
         while (!BinaryStdIn.isEmpty()) {
             int idx = BinaryStdIn.readChar(8);
             char c = mtf[idx];
+
             BinaryStdOut.write(mtf[idx], 8);
 
             // move this char to the front
-            for (int i = c; i > 0; i--) mtf[i] = mtf[i-1];
+            for (int i = idx; i > 0; i--) mtf[i] = mtf[i-1];
             mtf[0] = c;
         }
         BinaryStdOut.close();
