@@ -9,12 +9,14 @@ import java.util.List;
 
 public class CircularSuffixArray {
 
-    private static List<String> originalSuffixes = new ArrayList<String>();
-    private static List<String> sortedSuffixes = new ArrayList<String>();
-    private static String inputString = "";
+    private List<String> originalSuffixes;
+    private List<String> sortedSuffixes;
+    private String inputString = "";
 
     // circular suffix array of s
     public CircularSuffixArray(String s) {
+
+        if (s == null) throw new IllegalArgumentException();
 
         inputString = s;
         originalSuffixes = new ArrayList<>();
