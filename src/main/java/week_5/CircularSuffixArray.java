@@ -45,7 +45,7 @@ public class CircularSuffixArray {
 
     // unit testing (required)
     public static void main(String[] args) {
-        String input = "ABRACADABRA!";
+        String input = "couscous";
         CircularSuffixArray obj = new CircularSuffixArray(input);
         System.out.println("Length - " + obj.length());
         for (int i = 0; i < input.length(); i++) {
